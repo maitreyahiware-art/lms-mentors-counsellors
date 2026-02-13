@@ -9,6 +9,7 @@ import {
     User,
     Sparkles,
     ChevronRight,
+    ChevronLeft,
     Play,
     Share2,
     Bookmark
@@ -17,6 +18,11 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { syllabusData } from "@/data/syllabus";
 import { motion, Variants } from "framer-motion";
+import { useState, useEffect } from "react";
+import AIAssessment from "@/components/AIAssessment";
+import ClinicalSimulator from "@/components/ClinicalSimulator";
+import SummaryGrader from "@/components/SummaryGrader";
+import { supabase } from "@/lib/supabase";
 
 export default function ModulePage() {
     const params = useParams();
@@ -24,6 +30,75 @@ export default function ModulePage() {
     const moduleId = params.id as string;
 
     const module = syllabusData.find(m => m.id === moduleId);
+
+    const [completedTopics, setCompletedTopics] = useState<string[]>([]);
+
+    useEffect(() => {
+        const fetchProgress = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                const { data } = await supabase
+                    .from('mentor_progress')
+                    .select('topic_code')
+                    .eq('user_id', session.user.id)
+                    .eq('module_id', moduleId);
+
+                if (data) {
+                    setCompletedTopics(data.map(p => p.topic_code));
+                }
+            }
+        };
+        fetchProgress();
+    }, [moduleId]);
+
+    const toggleTopic = async (topicCode: string) => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const isCompleted = completedTopics.includes(topicCode);
+
+        if (isCompleted) {
+            const { error } = await supabase
+                .from('mentor_progress')
+                .delete()
+                .eq('user_id', session.user.id)
+                .eq('topic_code', topicCode);
+
+            if (!error) {
+                setCompletedTopics(completedTopics.filter(t => t !== topicCode));
+            }
+        } else {
+            const { error } = await supabase
+                .from('mentor_progress')
+                .insert([{
+                    user_id: session.user.id,
+                    topic_code: topicCode,
+                    module_id: moduleId
+                }]);
+
+            if (!error) {
+                setCompletedTopics([...completedTopics, topicCode]);
+            }
+        }
+    };
+
+    const currentModuleIndex = syllabusData.findIndex(m => m.id === moduleId);
+    const prevModule = syllabusData[currentModuleIndex - 1];
+    const nextModule = syllabusData[currentModuleIndex + 1];
+
+    const handlePrev = () => {
+        if (prevModule) {
+            router.push(`/modules/${prevModule.id}`);
+        }
+    };
+
+    const handleContinue = () => {
+        if (nextModule) {
+            router.push(`/modules/${nextModule.id}`);
+        } else {
+            router.push('/');
+        }
+    };
 
     if (!module) {
         return (
@@ -65,7 +140,27 @@ export default function ModulePage() {
                     </div>
                 </Link>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => router.back()}
+                        className="h-12 px-6 rounded-2xl font-bold shadow-lg flex items-center gap-2 transition-all bg-white text-[#0E5858] hover:bg-green-50 border border-green-100"
+                        title="Go Back"
+                    >
+                        <ChevronLeft size={20} />
+                        <span className="hidden md:inline">Back</span>
+                    </button>
+
+                    <button
+                        onClick={() => router.forward()}
+                        className="h-12 px-6 rounded-2xl font-bold shadow-lg flex items-center gap-2 transition-all bg-white text-[#0E5858] hover:bg-green-50 border border-green-100"
+                        title="Go Forward"
+                    >
+                        <span className="hidden md:inline">Forward</span>
+                        <ChevronRight size={20} />
+                    </button>
+
+                    <div className="w-px h-8 bg-gray-200 mx-2"></div>
+
                     <button className="w-12 h-12 rounded-2xl bg-white shadow-lg flex items-center justify-center text-[#0E5858]/40 hover:text-[#0E5858] transition-all"><Bookmark size={20} /></button>
                     <button className="w-12 h-12 rounded-2xl bg-white shadow-lg flex items-center justify-center text-[#0E5858]/40 hover:text-[#0E5858] transition-all"><Share2 size={20} /></button>
                 </div>
@@ -120,8 +215,8 @@ export default function ModulePage() {
             </header>
 
             {/* Topics Content Grid */}
-            <div className="space-y-12">
-                <h3 className="text-3xl font-serif text-[#0E5858] mb-10 flex items-center gap-4">
+            <div className="space-y-6">
+                <h3 className="text-2xl font-serif text-[#0E5858] mb-6 flex items-center gap-4">
                     The Syllabus Breakdown
                     <div className="h-px flex-1 bg-gradient-to-r from-gray-100 to-transparent"></div>
                 </h3>
@@ -132,23 +227,33 @@ export default function ModulePage() {
                             key={topic.code}
                             variants={topicVariants}
                             whileHover={{ x: 10 }}
-                            className="premium-card p-10 lg:p-12 group cursor-default"
+                            className={`premium-card p-6 lg:p-8 group cursor-default relative transition-all duration-300 ${completedTopics.includes(topic.code) ? 'bg-green-50/80 border-green-200' : 'bg-white'}`}
                         >
-                            <div className="flex flex-col xl:flex-row gap-12">
+                            {/* Absolute Positioned Tickbox */}
+                            <button
+                                onClick={() => toggleTopic(topic.code)}
+                                className={`absolute top-4 right-4 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all z-20 ${completedTopics.includes(topic.code)
+                                    ? 'bg-green-500 border-green-500 text-white'
+                                    : 'border-gray-200 text-gray-200 hover:border-green-500 hover:text-green-500'
+                                    }`}
+                            >
+                                <CheckCircle size={14} />
+                            </button>
+                            <div className="flex flex-col xl:flex-row gap-6">
                                 {/* Topic Index */}
                                 <div className="shrink-0 flex flex-col items-center">
-                                    <div className="w-20 h-20 bg-[#FAFCEE] border border-[#00B6C1]/20 rounded-[2rem] flex items-center justify-center text-[#00B6C1] text-2xl font-bold shadow-inner group-hover:bg-[#00B6C1] group-hover:text-white transition-all duration-700 font-serif">
+                                    <div className={`w-12 h-12 border border-[#00B6C1]/20 rounded-2xl flex items-center justify-center text-[#00B6C1] text-lg font-bold shadow-inner transition-all duration-700 font-serif ${completedTopics.includes(topic.code) ? 'bg-green-100 border-green-300' : 'bg-[#FAFCEE] group-hover:bg-[#00B6C1] group-hover:text-white'}`}>
                                         {index + 1 < 10 ? `0${index + 1}` : index + 1}
                                     </div>
-                                    <div className="mt-6 flex flex-col items-center gap-1">
-                                        <div className="w-0.5 h-12 bg-gradient-to-b from-[#00B6C1]/30 to-transparent"></div>
-                                        <span className="text-[10px] font-bold text-[#00B6C1] tracking-widest rotate-90 translate-y-6">{topic.code}</span>
+                                    <div className="mt-4 flex flex-col items-center gap-1">
+                                        <div className="w-0.5 h-8 bg-gradient-to-b from-[#00B6C1]/30 to-transparent"></div>
+                                        <span className="text-[8px] font-bold text-[#00B6C1] tracking-widest rotate-90 translate-y-4">{topic.code}</span>
                                     </div>
                                 </div>
 
                                 <div className="flex-1">
-                                    <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
-                                        <h2 className="text-4xl font-serif text-[#0E5858] leading-tight group-hover:text-[#00B6C1] transition-colors decoration-[#00B6C1]/30 decoration-2 underline-offset-8 group-hover:underline">
+                                    <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 gap-6">
+                                        <h2 className={`text-2xl font-serif text-[#0E5858] leading-tight group-hover:text-[#00B6C1] transition-colors decoration-[#00B6C1]/30 decoration-2 underline-offset-8 group-hover:underline ${completedTopics.includes(topic.code) ? 'line-through decoration-green-500' : ''}`}>
                                             {topic.title}
                                         </h2>
                                         {topic.owner && (
@@ -162,11 +267,12 @@ export default function ModulePage() {
                                         )}
                                     </div>
 
-                                    <p className="text-xl text-gray-500 font-medium mb-10 leading-relaxed tracking-tight group-hover:text-[#0E5858] transition-colors">
-                                        {topic.content}
-                                    </p>
+                                    <div
+                                        className={`text-base text-gray-500 font-medium mb-6 leading-relaxed tracking-tight group-hover:text-[#0E5858] transition-colors ${completedTopics.includes(topic.code) ? 'line-through opacity-60' : ''}`}
+                                        dangerouslySetInnerHTML={{ __html: topic.content }}
+                                    />
 
-                                    <div className="flex flex-wrap items-center gap-10">
+                                    <div className="flex flex-wrap items-center gap-6">
                                         {topic.outcome && (
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-xl bg-[#FAFCEE] flex items-center justify-center text-[#00B6C1] shadow-sm"><CheckCircle size={18} /></div>
@@ -181,7 +287,7 @@ export default function ModulePage() {
                                             <div className="flex items-center gap-3">
                                                 {topic.links.map(link => (
                                                     <a
-                                                        key={link.url}
+                                                        key={link.label}
                                                         href={link.url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
@@ -194,14 +300,34 @@ export default function ModulePage() {
                                             </div>
                                         )}
                                     </div>
+
+                                    {/* AI Mentor Training Suite */}
+                                    <div className="mt-10 pt-10 border-t border-[#00B6C1]/10 space-y-8">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-xl bg-[#00B6C1] flex items-center justify-center text-white"><Sparkles size={14} /></div>
+                                            <h4 className="text-xs font-bold text-[#0E5858] uppercase tracking-[0.2em]">AI Training Suite</h4>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                                            <div className="space-y-6">
+                                                <div className="p-6 bg-[#FAFCEE]/50 rounded-3xl border border-[#00B6C1]/10">
+                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Phase 1: Knowledge Check</p>
+                                                    <AIAssessment topicTitle={topic.title} topicContent={topic.content} topicCode={topic.code} />
+                                                </div>
+                                                <div className="p-6 bg-[#FAFCEE]/50 rounded-3xl border border-[#00B6C1]/10">
+                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Phase 2: Live Interaction</p>
+                                                    <ClinicalSimulator topicTitle={topic.title} topicContent={topic.content} topicCode={topic.code} />
+                                                </div>
+                                            </div>
+
+                                            <div className="p-6 bg-[#FAFCEE]/50 rounded-3xl border border-[#00B6C1]/10 bg-gradient-to-br from-white to-[#FAFCEE]">
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Phase 3: Learning Audit</p>
+                                                <SummaryGrader topicTitle={topic.title} topicContent={topic.content} topicCode={topic.code} />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                {/* Mark Complete Checkbox Style */}
-                                <div className="shrink-0 flex items-center justify-center">
-                                    <button className="w-16 h-16 rounded-[1.75rem] border-2 border-gray-100 bg-gray-50 flex items-center justify-center text-gray-300 hover:bg-[#00B6C1]/10 hover:border-[#00B6C1] hover:text-[#00B6C1] transition-all group-hover:scale-110 active:scale-95">
-                                        <CheckCircle size={28} />
-                                    </button>
-                                </div>
                             </div>
                         </motion.div>
                     ))
@@ -219,25 +345,27 @@ export default function ModulePage() {
             </div>
 
             {/* Editorial Footer */}
-            <footer className="mt-32 pt-16 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-10">
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-3 text-gray-300 font-bold uppercase tracking-[0.3em] text-[10px]">
-                        <Clock size={14} />
-                        <span>Next Milestone</span>
-                    </div>
-                    <p className="text-xl font-serif text-[#0E5858]">Business Mastery Certificate <span className="text-[#00B6C1]">Lvl. 1</span></p>
-                </div>
+            {/* Editorial Footer */}
+            <footer className="mt-32 pt-16 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
+                <button
+                    onClick={handlePrev}
+                    disabled={!prevModule}
+                    className={`px-8 py-4 rounded-[2rem] font-bold shadow-xl flex items-center gap-3 transition-all ${prevModule
+                        ? 'bg-white text-[#0E5858] hover:bg-gray-50 border border-gray-100 hover:shadow-2xl'
+                        : 'bg-gray-50 text-gray-300 cursor-not-allowed opacity-50'
+                        }`}
+                >
+                    <ChevronLeft size={20} />
+                    Previous Module
+                </button>
 
-                <div className="flex items-center gap-6">
-                    <button className="text-sm font-bold text-gray-400 hover:text-[#0E5858] transition-colors uppercase tracking-widest">Manual Mode</button>
-                    <button
-                        onClick={() => router.push('/')}
-                        className="px-12 py-5 bg-[#0E5858] text-white rounded-[2rem] font-bold shadow-3xl hover:bg-[#00B6C1] hover:shadow-[#00B6C1]/40 hover:translate-y-[-5px] transition-all duration-500 flex items-center gap-4"
-                    >
-                        Continue Pathway
-                        <ChevronRight size={20} />
-                    </button>
-                </div>
+                <button
+                    onClick={handleContinue}
+                    className="px-10 py-5 bg-[#0E5858] text-white rounded-[2rem] font-bold shadow-3xl hover:bg-[#00B6C1] hover:shadow-[#00B6C1]/40 hover:translate-y-[-5px] transition-all duration-500 flex items-center gap-4"
+                >
+                    {nextModule ? 'Next Module' : 'Return to Hub'}
+                    <ChevronRight size={20} />
+                </button>
             </footer>
         </motion.main>
     );

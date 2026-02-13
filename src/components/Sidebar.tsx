@@ -13,7 +13,9 @@ import {
     LogOut,
     Flame,
     Search,
-    Bell
+    Bell,
+    BarChart3,
+    Award
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,6 +23,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 const navItems = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Training', href: '/training', icon: GraduationCap },
+    { name: 'Certification', href: '/certification', icon: Award },
+    { name: 'Founder Dashboard', href: '/founder', icon: BarChart3 },
     { name: 'Content Bank', href: '/content-bank', icon: ImageIcon },
     { name: 'Program Info', href: '/program-info', icon: Info },
 ];
@@ -162,7 +166,13 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: {
                 </div>
 
                 {!isCollapsed && (
-                    <button className="mt-6 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white/30 hover:bg-white/5 hover:text-white transition-all border border-transparent hover:border-white/10">
+                    <button
+                        onClick={() => {
+                            localStorage.removeItem("bn_lms_auth");
+                            window.location.href = "/login";
+                        }}
+                        className="mt-6 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white/30 hover:bg-white/5 hover:text-white transition-all border border-transparent hover:border-white/10"
+                    >
                         <LogOut size={14} />
                         Logout System
                     </button>

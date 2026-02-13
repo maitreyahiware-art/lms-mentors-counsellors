@@ -13,15 +13,39 @@ import {
   Zap,
   Target,
   MessageSquare,
-  User
+  User,
+  Activity,
+  Share2,
+  Layers,
+  Leaf,
+  Briefcase,
+  ListChecks
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { syllabusData } from "@/data/syllabus";
 import { motion, Variants } from "framer-motion";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const router = useRouter();
   const displayModules = syllabusData;
+  const [completedModules, setCompletedModules] = useState<string[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('bn-lms-completed-modules');
+    if (saved) {
+      setCompletedModules(JSON.parse(saved));
+    }
+  }, []);
+
+  const toggleModule = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newCompleted = completedModules.includes(id)
+      ? completedModules.filter(m => m !== id)
+      : [...completedModules, id];
+    setCompletedModules(newCompleted);
+    localStorage.setItem('bn-lms-completed-modules', JSON.stringify(newCompleted));
+  };
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -89,7 +113,9 @@ export default function Home() {
             <div className="flex justify-between items-start mb-8">
               <div>
                 <span className="badge-teal mb-3 inline-block">Certification Path: Active</span>
-                <p className="text-5xl font-serif text-[#0E5858]">12.5%</p>
+                <p className="text-5xl font-serif text-[#0E5858]">
+                  {displayModules.length > 0 ? Math.round((completedModules.length / displayModules.length) * 100) : 0}%
+                </p>
                 <p className="text-sm font-bold text-[#0E5858]/40 uppercase tracking-widest mt-1">Counselling Protocol Mastery</p>
               </div>
               <div className="w-14 h-14 bg-[#FFCC00] rounded-2xl flex items-center justify-center text-[#0E5858] shadow-lg shadow-[#FFCC00]/20">
@@ -101,14 +127,14 @@ export default function Home() {
               <div className="h-3 w-full bg-[#0E5858]/5 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: "12.5%" }}
+                  animate={{ width: `${displayModules.length > 0 ? (completedModules.length / displayModules.length) * 100 : 0}%` }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
                   className="h-full bg-gradient-to-r from-[#0E5858] to-[#00B6C1]"
                 />
               </div>
               <div className="flex justify-between text-[11px] font-bold text-[#0E5858]/40 uppercase tracking-tighter">
                 <span>Foundation Phase</span>
-                <span className="text-[#00B6C1]">2/12 Modules Done</span>
+                <span className="text-[#00B6C1]">{completedModules.length}/{displayModules.length} Modules Done</span>
               </div>
             </div>
           </div>
@@ -225,23 +251,45 @@ export default function Home() {
 
                 <div
                   onClick={() => router.push(`/modules/${module.id}`)}
-                  className="group premium-card p-6 cursor-pointer flex flex-col md:flex-row items-center gap-6 border border-white/60 bg-white shadow-xl hover:shadow-2xl transition-all duration-300"
+                  className={`group premium-card p-4 cursor-pointer flex flex-col md:flex-row items-center gap-4 border border-white/60 shadow-lg hover:shadow-xl transition-all duration-300 relative ${completedModules.includes(module.id) ? 'bg-green-50/80 border-green-200' : 'bg-white'}`}
                 >
-                  <div className={`shrink-0 w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-500 shadow-sm ${module.status === 'Locked'
+                  {/* Absolute Positioned Tickbox */}
+                  <button
+                    onClick={(e) => toggleModule(module.id, e)}
+                    className={`absolute top-3 right-3 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all z-20 ${completedModules.includes(module.id)
+                      ? 'bg-green-500 border-green-500 text-white'
+                      : 'border-gray-200 text-gray-200 hover:border-green-500 hover:text-green-500'
+                      }`}
+                  >
+                    <CheckCircle2 size={14} />
+                  </button>
+
+                  <div className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 shadow-sm ${module.status === 'Locked'
                     ? 'bg-gray-50 text-gray-300'
                     : 'bg-[#FAFCEE] text-[#00B6C1] group-hover:bg-[#00B6C1] group-hover:text-white group-hover:rotate-6'
                     }`}>
-                    {module.type === 'resource' ? <FileSpreadsheet size={24} /> : <BookOpen size={24} />}
+                    {module.icon === 'social' ? <Share2 size={24} /> :
+                      module.icon === 'health' ? <Activity size={24} /> :
+                        module.icon === 'business' ? <Briefcase size={24} /> :
+                          module.icon === 'programs' ? <Layers size={24} /> :
+                            module.icon === 'cleanse' ? <Leaf size={24} /> :
+                              module.type === 'checklist' ? <ListChecks size={24} /> :
+                                module.type === 'resource' ? <FileSpreadsheet size={24} /> :
+                                  <BookOpen size={24} />}
                   </div>
 
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="text-[9px] font-bold text-[#00B6C1] uppercase tracking-[0.2em]">Step {index + 1}</span>
-                      <span className="w-1 h-1 bg-gray-100 rounded-full"></span>
-                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{module.type}</span>
+                  <div className={`flex-1 ${completedModules.includes(module.id) ? 'opacity-80' : ''}`}>
+                    <div className="flex items-center gap-3 mb-0.5">
+                      <span className="text-[8px] font-bold text-[#00B6C1] uppercase tracking-[0.2em]">Step {index + 1}</span>
+                      <span className="w-0.5 h-0.5 bg-gray-100 rounded-full"></span>
+                      <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{module.type}</span>
                     </div>
-                    <h4 className="text-xl font-bold text-[#0E5858] mb-1 group-hover:text-[#00B6C1] transition-colors">{module.title}</h4>
-                    <p className="text-gray-400 text-xs font-medium line-clamp-1">{module.subtitle || module.description}</p>
+                    <h4 className={`text-lg font-bold text-[#0E5858] mb-0.5 group-hover:text-[#00B6C1] transition-colors ${completedModules.includes(module.id) ? 'line-through decoration-green-500 decoration-1' : ''}`}>
+                      {module.title}
+                    </h4>
+                    <p className={`text-gray-400 text-[10px] font-medium line-clamp-1 ${completedModules.includes(module.id) ? 'line-through' : ''}`}>
+                      {module.subtitle || module.description}
+                    </p>
                   </div>
 
                   <div className="flex items-center gap-4">
