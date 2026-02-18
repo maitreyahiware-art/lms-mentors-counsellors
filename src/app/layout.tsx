@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { Search, Bell, Sparkles, LogOut, Loader2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { Analytics } from "@vercel/analytics/next";
 
 const playfair = Playfair_Display({
   variable: "--font-serif",
@@ -82,6 +83,7 @@ export default function RootLayout({
             <Loader2 className="animate-spin text-[#00B6C1]" size={40} />
             <p className="text-[10px] font-bold text-[#0E5858]/40 uppercase tracking-[0.2em]">Verifying Session...</p>
           </div>
+          <Analytics />
         </body>
       </html>
     );
@@ -93,6 +95,7 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${playfair.variable} ${outfit.variable} font-sans text-[#0E5858] bg-[#FAFCEE] antialiased overflow-x-hidden`}>
           {children}
+          <Analytics />
         </body>
       </html>
     );
@@ -155,6 +158,7 @@ export default function RootLayout({
             <div className="fixed bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#FFCC00]/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
           </div>
         </div>
+        <Analytics />
       </body>
     </html>
   );
