@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
     LayoutDashboard,
     GraduationCap,
@@ -11,29 +10,60 @@ import {
     ChevronLeft,
     ChevronRight,
     LogOut,
-    Flame,
-    Search,
     Bell,
     BarChart3,
-    Award
+    Award,
+    CheckCircle2,
+    UserPlus,
+    ClipboardList
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { supabase } from '@/lib/supabase';
 
 const navItems = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-    { name: 'Training', href: '/training', icon: GraduationCap },
+    { name: 'Training Modules', href: '/training', icon: GraduationCap },
     { name: 'Certification', href: '/certification', icon: Award },
-    { name: 'Founder Dashboard', href: '/founder', icon: BarChart3 },
-    { name: 'Content Bank', href: '/content-bank', icon: ImageIcon },
+    { name: 'Content Bank', href: '/content-bank', icon: BarChart3 },
     { name: 'Program Info', href: '/program-info', icon: Info },
 ];
 
-export default function Sidebar({ isCollapsed, setIsCollapsed }: {
+const adminNavItems = [
+    { name: 'Training Modules', href: '/training', icon: GraduationCap },
+    { name: 'Content Bank', href: '/content-bank', icon: BarChart3 },
+    { name: 'Provision Keys', href: '/admin?tab=credentials', icon: UserPlus },
+    { name: 'Content Architect', href: '/admin?tab=content-architect', icon: LayoutDashboard },
+    { name: 'Mentor Logs', href: '/admin?tab=mentor-logs', icon: ClipboardList },
+];
+
+function getInitials(name: string): string {
+    return name
+        .split(' ')
+        .filter(Boolean)
+        .map(w => w[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+}
+
+export default function Sidebar({ isCollapsed, setIsCollapsed, userName, userEmail, userRole }: {
     isCollapsed: boolean,
-    setIsCollapsed: (v: boolean) => void
+    setIsCollapsed: (v: boolean) => void,
+    userName: string,
+    userEmail: string,
+    userRole: string
 }) {
     const pathname = usePathname();
+    const initials = getInitials(userName || 'M');
+
+    // Use admin specific items if role is admin
+    const currentNavItems = userRole === 'admin' || userRole === 'founder' ? adminNavItems : navItems;
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        window.location.href = '/login';
+    };
 
     return (
         <motion.aside
@@ -73,27 +103,24 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: {
                         <span className="font-serif font-bold text-xl leading-none">
                             Balance <span className="text-[#00B6C1]">Nutrition</span>
                         </span>
-                        <span className="text-[10px] text-[#00B6C1] font-bold tracking-[0.2em] uppercase mt-1 opacity-70">Mentor Academy</span>
+                        <span className="text-[10px] text-[#00B6C1] font-bold tracking-[0.2em] uppercase mt-1 opacity-70">Counselor Academy</span>
                     </motion.div>
                 )}
             </div>
 
-            {/* Streak / Search Section (Enhanced Feature) */}
+            {/* Status Badge */}
             {!isCollapsed && (
                 <div className="px-6 mb-6">
                     <div className="bg-white/5 border border-white/10 rounded-[1.5rem] p-4 flex items-center justify-between group hover:bg-white/10 transition-all cursor-default overflow-hidden relative">
-                        <div className="absolute top-0 right-0 p-2 text-white/5 group-hover:text-[#FFCC00]/10 transition-colors">
-                            <Flame size={48} />
-                        </div>
                         <div>
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Clinical Engagement</p>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Account Status</p>
                             <div className="flex items-center gap-2">
-                                <Flame size={20} className="text-[#FFCC00]" />
-                                <span className="text-xl font-bold font-serif">12 <span className="text-sm font-sans font-normal opacity-50 underline decoration-[#FFCC00]/30">Days</span></span>
+                                <CheckCircle2 size={18} className="text-green-400" />
+                                <span className="text-base font-bold font-serif">Active</span>
                             </div>
                         </div>
-                        <div className="bg-[#FFCC00]/20 p-2 rounded-full">
-                            <Bell size={16} className="text-[#FFCC00] animate-pulse" />
+                        <div className="bg-green-500/20 p-2 rounded-full">
+                            <Bell size={16} className="text-green-400" />
                         </div>
                     </div>
                 </div>
@@ -101,34 +128,37 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: {
 
             {isCollapsed && (
                 <div className="flex justify-center mb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-[#FFCC00] border border-white/10">
-                        <Flame size={24} />
+                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-green-400 border border-white/10">
+                        <CheckCircle2 size={24} />
                     </div>
                 </div>
             )}
 
             {/* Nav Items */}
             <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto">
-                {navItems.map((item) => {
-                    const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                {currentNavItems.map((item) => {
+                    const isActive = pathname === item.href || (item.href.includes('?') ? pathname === item.href.split('?')[0] : pathname === item.href);
+                    // Special logic for active tab in admin
+                    const isTabActive = item.href.includes('?tab=') && window.location.search.includes(item.href.split('?')[1]);
+
                     return (
                         <Link
                             key={item.name}
                             href={item.href}
-                            className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group relative ${isActive
+                            className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group relative ${isActive || isTabActive
                                 ? 'bg-gradient-to-r from-[#00B6C1] to-[#00B6C1]/80 text-white shadow-[0_10px_20px_-5px_rgba(0,182,193,0.4)]'
                                 : 'text-[#FAFCEE]/40 hover:bg-white/5 hover:text-white'
                                 }`}
                         >
-                            {isActive && (
+                            {(isActive || isTabActive) && (
                                 <motion.div
                                     layoutId="sidebar-active"
                                     className="absolute left-0 w-1.5 h-6 bg-white rounded-r-full"
                                 />
                             )}
-                            <item.icon size={22} className={`shrink-0 transition-transform duration-500 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                            <item.icon size={22} className={`shrink-0 transition-transform duration-500 ${(isActive || isTabActive) ? 'scale-110' : 'group-hover:scale-110'}`} />
                             {!isCollapsed && (
-                                <span className={`font-medium transition-all ${isActive ? 'text-white' : ''}`}>
+                                <span className={`font-medium transition-all ${(isActive || isTabActive) ? 'text-white' : ''}`}>
                                     {item.name}
                                 </span>
                             )}
@@ -143,13 +173,13 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: {
                 })}
             </nav>
 
-            {/* User Profile - Refined */}
+            {/* User Profile - Real User */}
             <div className={`p-6 border-t border-white/5 bg-black/5 mt-auto group cursor-pointer`}>
                 <div className={`flex items-center gap-4 ${isCollapsed ? 'justify-center' : ''}`}>
                     <div className="relative">
                         <div className="absolute inset-0 bg-[#FFCC00] blur-md opacity-20 group-hover:opacity-60 transition-opacity"></div>
                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFCC00] to-[#E5B800] flex items-center justify-center text-[#0E5858] font-bold shrink-0 shadow-lg relative z-10 text-lg">
-                            SP
+                            {initials}
                         </div>
                         <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-[#0E5858] rounded-full z-20"></div>
                     </div>
@@ -159,22 +189,19 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: {
                             animate={{ opacity: 1 }}
                             className="overflow-hidden"
                         >
-                            <p className="text-sm font-bold truncate tracking-tight">Sarah Parker</p>
-                            <p className="text-[10px] text-[#00B6C1] font-bold uppercase tracking-widest opacity-80">Foundation Mentor</p>
+                            <p className="text-sm font-bold truncate tracking-tight">{userName}</p>
+                            <p className="text-[10px] text-[#00B6C1] font-bold uppercase tracking-widest opacity-80">{userRole}</p>
                         </motion.div>
                     )}
                 </div>
 
                 {!isCollapsed && (
                     <button
-                        onClick={() => {
-                            localStorage.removeItem("bn_lms_auth");
-                            window.location.href = "/login";
-                        }}
+                        onClick={handleLogout}
                         className="mt-6 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white/30 hover:bg-white/5 hover:text-white transition-all border border-transparent hover:border-white/10"
                     >
                         <LogOut size={14} />
-                        Logout System
+                        Sign Out
                     </button>
                 )}
             </div>

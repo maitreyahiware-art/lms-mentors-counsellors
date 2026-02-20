@@ -184,7 +184,7 @@ export default function CertificationPage() {
                         The Final <span className="text-[#00B6C1]">Audit</span>
                     </h1>
                     <p className="text-gray-400 mt-6 max-w-2xl mx-auto text-lg">
-                        This is the comprehensive assessment for Balance Nutrition Mentors. We will evaluate your knowledge of culture, clinical protocols, and operations.
+                        This is the comprehensive assessment for Balance Nutrition Counselors. We will evaluate your knowledge of culture, clinical protocols, and operations.
                     </p>
                 </header>
 

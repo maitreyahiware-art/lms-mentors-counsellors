@@ -27,6 +27,21 @@ export default function SummaryGrader({ topicTitle, topicContent, topicCode }: {
             // Save to Supabase
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
+                // Admin-level Profile Sync via API
+                try {
+                    await fetch('/api/auth/sync-profile', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: session.user.id,
+                            email: session.user.email,
+                            fullName: session.user.user_metadata?.full_name
+                        })
+                    });
+                } catch (pe) {
+                    console.error("Critical Profile Sync Failure:", pe);
+                }
+
                 await supabase.from('summary_audits').insert([{
                     user_id: session.user.id,
                     topic_code: topicCode,

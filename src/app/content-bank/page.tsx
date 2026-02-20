@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, Variants } from "framer-motion";
+import { motion, Variants, AnimatePresence } from "framer-motion";
 import { syllabusData } from "@/data/syllabus";
 import {
     FileText,
@@ -8,23 +8,73 @@ import {
     ExternalLink,
     Search,
     Filter,
-    Download,
     Share2,
-    FolderOpen
+    FolderOpen,
+    Play,
+    Clock,
+    User,
+    X,
+    Maximize2
 } from "lucide-react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function ContentBankPage() {
+function getYouTubeId(url: string) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function ContentBankContent() {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("All");
+    const [selectedVideo, setSelectedVideo] = useState<{ id: string, title: string } | null>(null);
+    const searchParams = useSearchParams();
+
     // Extract resource bank module
     const resourceModule = syllabusData.find(m => m.type === 'resource' || m.id === 'resource-bank');
 
+    useEffect(() => {
+        const q = searchParams.get('search');
+        if (q) {
+            setSearchQuery(q);
+            if (q.includes('Phase 1')) setSelectedCategory('Phase 1');
+            else if (q.includes('Phase 2')) setSelectedCategory('Phase 2');
+        }
+    }, [searchParams]);
+
+    const categories = ["All", "Sales Training", "Phase 1", "Phase 2", "Program Manuals"];
+
+    const filteredResources = resourceModule?.topics.filter(r => {
+        // Remove items with no link or '#' links
+        const hasValidLink = r.links && r.links.length > 0 && r.links[0].url && r.links[0].url !== '#';
+        if (!hasValidLink) return false;
+
+        // Search filter
+        const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            r.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            r.code.toLowerCase().includes(searchQuery.toLowerCase());
+
+        if (!matchesSearch) return false;
+
+        // Category filter
+        if (selectedCategory === "All") return true;
+        if (selectedCategory === "Sales Training") return r.code.startsWith('VB');
+        if (selectedCategory === "Phase 1") return r.code.includes('P1') || r.title.includes('Phase 1');
+        if (selectedCategory === "Phase 2") return r.code.includes('P2') || r.title.includes('Phase 2');
+        if (selectedCategory === "Program Manuals") return r.code.startsWith('RB') && !r.code.includes('PV');
+
+        return true;
+    }) || [];
+
     const containerVariants: Variants = {
         hidden: { opacity: 0 },
-        visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
     };
 
     const itemVariants: Variants = {
-        hidden: { opacity: 0, scale: 0.95 },
-        visible: { opacity: 1, scale: 1, transition: { duration: 0.4 } }
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
     };
 
     return (
@@ -32,89 +82,191 @@ export default function ContentBankPage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="p-8 lg:p-12 max-w-7xl mx-auto"
+            className="p-8 lg:p-12 max-w-[1600px] mx-auto bg-gray-50/30 min-h-screen"
         >
-            <header className="mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
-                <div className="max-w-2xl">
-                    <div className="flex items-center gap-2 text-[#00B6C1] font-bold uppercase tracking-[0.3em] text-[10px] mb-4">
+            <AnimatePresence>
+                {selectedVideo && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-12 bg-black/95 backdrop-blur-xl"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="relative w-full max-w-6xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl"
+                        >
+                            <button
+                                onClick={() => setSelectedVideo(null)}
+                                className="absolute top-6 right-6 z-[110] w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-all border border-white/10"
+                            >
+                                <X size={24} />
+                            </button>
+
+                            <div className="absolute top-6 left-10 z-[110] pointer-events-none">
+                                <h2 className="text-white text-xl font-serif bg-black/40 px-4 py-2 rounded-xl backdrop-blur-md border border-white/10">{selectedVideo.title}</h2>
+                            </div>
+
+                            <iframe
+                                src={`https://www.youtube.com/embed/${selectedVideo.id}?autoplay=1`}
+                                className="w-full h-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <header className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+                <div>
+                    <div className="flex items-center gap-2 text-[#00B6C1] font-bold uppercase tracking-[0.3em] text-[10px] mb-3">
                         <FolderOpen size={16} />
-                        <span>Asset Library</span>
+                        <span>Asset Central</span>
                     </div>
-                    <h1 className="text-5xl font-serif text-[#0E5858] mb-4">Clinical Content Bank</h1>
-                    <p className="text-xl text-gray-500">
-                        Access patient counseling manuals, clinical video protocols, and essential mentor resources.
-                    </p>
+                    <h1 className="text-4xl lg:text-5xl font-serif text-[#0E5858] mb-2 tracking-tight">Clinical Content Bank</h1>
+                    <p className="text-gray-500 font-medium tracking-tight">Refined clinical protocols, program walkthroughs, and sales mastery sessions.</p>
                 </div>
 
-                <div className="w-full md:w-auto flex items-center gap-4">
-                    <div className="relative flex-1 md:w-80">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <input
-                            type="text"
-                            placeholder="Search resources..."
-                            className="w-full pl-12 pr-6 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#00B6C1]/20 transition-all font-medium"
-                        />
-                    </div>
-                    <button className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm text-gray-400 hover:text-[#0E5858] transition-all">
-                        <Filter size={20} />
-                    </button>
+                <div className="group relative w-full md:w-96">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#00B6C1] transition-colors" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Search programs (Phase 1, Phase 2...)"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-12 pr-6 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:outline-none focus:ring-4 focus:ring-[#00B6C1]/10 focus:border-[#00B6C1] transition-all font-medium text-sm"
+                    />
                 </div>
             </header>
 
+            {/* Category Filter Tabs */}
+            <div className="flex items-center gap-3 mb-12 overflow-x-auto pb-4 no-scrollbar">
+                {categories.map((cat) => (
+                    <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap ${selectedCategory === cat
+                            ? 'bg-[#0E5858] text-white shadow-xl shadow-[#0E5858]/20 ring-4 ring-[#0E5858]/5'
+                            : 'bg-white text-gray-400 hover:text-[#0E5858] border border-gray-100'
+                            }`}
+                    >
+                        {cat}
+                    </button>
+                ))}
+            </div>
+
             {resourceModule ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {resourceModule.topics.map((resource, index) => (
-                        <motion.div
-                            key={resource.code}
-                            variants={itemVariants}
-                            whileHover={{ y: -5 }}
-                            className="premium-card p-8 flex flex-col h-full bg-white group"
-                        >
-                            <div className="flex justify-between items-start mb-8">
-                                <div className="w-14 h-14 bg-[#FAFCEE] rounded-2xl flex items-center justify-center text-[#00B6C1] group-hover:bg-[#00B6C1] group-hover:text-white transition-all">
-                                    {resource.title.toLowerCase().includes('video') ? <Video size={24} /> : <FileText size={24} />}
-                                </div>
-                                <div className="flex gap-2">
-                                    <button className="p-2 text-gray-400 hover:text-[#0E5858] transition-colors"><Share2 size={16} /></button>
-                                    <button className="p-2 text-gray-400 hover:text-[#0E5858] transition-colors"><Download size={16} /></button>
-                                </div>
-                            </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
+                    {filteredResources.map((resource) => {
+                        const ytId = resource.links ? getYouTubeId(resource.links[0]?.url) : null;
 
-                            <div className="flex-1">
-                                <h3 className="text-xl font-bold text-[#0E5858] mb-4 group-hover:text-[#00B6C1] transition-colors tracking-tight">
-                                    {resource.title}
-                                </h3>
-                                <p className="text-gray-400 text-sm font-medium leading-relaxed mb-8">
-                                    {resource.content || "Clinical documentation and protocols for patient management and counselling excelence."}
-                                </p>
-                            </div>
+                        return (
+                            <motion.div
+                                key={resource.code}
+                                variants={itemVariants}
+                                className="group cursor-pointer flex flex-col"
+                                onClick={() => {
+                                    if (ytId) {
+                                        setSelectedVideo({ id: ytId, title: resource.title });
+                                    } else {
+                                        window.open(resource.links![0].url, '_blank');
+                                    }
+                                }}
+                            >
+                                {/* Thumbnail Container */}
+                                <div className="relative aspect-video rounded-[2.5rem] overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-[0_20px_50px_rgba(14,88,88,0.15)] transition-all duration-500 mb-6 group-hover:-translate-y-3">
+                                    {ytId ? (
+                                        <img
+                                            src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`}
+                                            alt={resource.title}
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                                            }}
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0E5858] via-[#0E5858] to-[#00B6C1] relative overflow-hidden">
+                                            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,_white_0%,_transparent_70%)]"></div>
+                                            <FolderOpen size={64} className="text-white/10 group-hover:text-white/30 transition-all group-hover:scale-110" />
+                                            {resource.title.includes('Folder') && (
+                                                <div className="absolute bottom-4 left-0 right-0 text-center">
+                                                    <span className="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-[8px] font-black text-white uppercase tracking-widest border border-white/10">Browse Assets</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
 
-                            <div className="pt-6 border-t border-gray-50 flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">{resource.code}</span>
-                                {resource.links && resource.links[0] && (
-                                    <a
-                                        href={resource.links[0].url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-[#00B6C1] font-bold text-sm flex items-center gap-2 hover:underline"
-                                    >
-                                        Access Now
-                                        <ExternalLink size={14} />
-                                    </a>
-                                )}
-                            </div>
-                        </motion.div>
-                    ))}
+                                    {/* Play Overlay */}
+                                    <div className="absolute inset-0 bg-black/5 group-hover:bg-[#0E5858]/40 transition-all duration-500 flex items-center justify-center opacity-0 group-hover:opacity-100 backdrop-blur-[2px]">
+                                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-[#0E5858] shadow-2xl transform scale-75 group-hover:scale-100 transition-all duration-500">
+                                            {ytId ? <Play size={24} fill="currentColor" className="ml-1" /> : <ExternalLink size={24} />}
+                                        </div>
+                                    </div>
+
+                                    {/* Tagging - Only for Videos */}
+                                    {ytId && (
+                                        <div className="absolute top-5 left-5 flex gap-2">
+                                            {(resource.content.includes('Phase 1') || resource.title.includes('Phase 1')) && (
+                                                <span className="bg-[#00B6C1] text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-xl shadow-lg backdrop-blur-md">Phase 1</span>
+                                            )}
+                                            {(resource.content.includes('Phase 2') || resource.title.includes('Phase 2')) && (
+                                                <span className="bg-[#0E5858] text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-xl shadow-lg backdrop-blur-md border border-white/10">Phase 2</span>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Duration Tag */}
+                                    <div className="absolute bottom-5 right-5 px-4 py-2 bg-black/60 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest rounded-xl border border-white/10">
+                                        {ytId ? 'Training Session' : 'Resource Folder'}
+                                    </div>
+                                </div>
+
+                                {/* Content Meta */}
+                                <div className="flex gap-5 px-3">
+                                    <div className="shrink-0 pt-1">
+                                        <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center justify-center text-[#00B6C1] group-hover:bg-[#00B6C1] group-hover:text-white transition-all transform group-hover:rotate-6 duration-500">
+                                            {ytId ? <Video size={20} /> : <FolderOpen size={20} />}
+                                        </div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-lg font-serif font-bold text-[#0E5858] leading-tight mb-2 line-clamp-2 group-hover:text-[#00B6C1] transition-colors tracking-tight">
+                                            {resource.title}
+                                        </h3>
+                                        <div className="flex items-center gap-2 text-[10px] text-gray-400 font-black uppercase tracking-[0.1em]">
+                                            <span>{resource.code}</span>
+                                            <span className="w-1 h-1 rounded-full bg-gray-200"></span>
+                                            <span className="text-[#00B6C1]/60">Clinical Protocol</span>
+                                        </div>
+                                        <p className="mt-3 text-xs text-gray-400 leading-relaxed line-clamp-2 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-500">
+                                            {resource.content}
+                                        </p>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
                 </div>
             ) : (
                 <div className="premium-card p-20 text-center flex flex-col items-center border-dashed border-2">
                     <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 mb-6">
                         <FolderOpen size={32} />
                     </div>
-                    <h2 className="text-2xl font-serif text-[#0E5858] mb-2">Vault is being populated</h2>
-                    <p className="text-gray-400 max-w-sm">We are currently migrating all clinical manuals and video protocols to this bank.</p>
+                    <h2 className="text-2xl font-serif text-[#0E5858] mb-2 tracking-tight">Vault Population in Progress</h2>
+                    <p className="text-gray-400 max-w-sm">We are currently migrating refined clinical manuals and video protocols to the Asset Central.</p>
                 </div>
             )}
         </motion.main>
+    );
+}
+
+export default function ContentBankPage() {
+    return (
+        <Suspense fallback={<div className="p-20 text-center font-serif text-[#0E5858] text-xl">Initializing Asset Central...</div>}>
+            <ContentBankContent />
+        </Suspense>
     );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import {
-    ArrowLeft,
     BookOpen,
     ExternalLink,
     CheckCircle,
@@ -10,19 +9,23 @@ import {
     Sparkles,
     ChevronRight,
     ChevronLeft,
-    Play,
-    Share2,
-    Bookmark
+    Brain,
+    ShoppingBag,
+    Globe,
+    Activity,
+    Target,
+    ArrowRight
 } from "lucide-react";
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { syllabusData } from "@/data/syllabus";
 import { motion, Variants } from "framer-motion";
 import { useState, useEffect } from "react";
+import TopicCard from "@/components/TopicCard";
+import { supabase } from "@/lib/supabase";
 import AIAssessment from "@/components/AIAssessment";
 import ClinicalSimulator from "@/components/ClinicalSimulator";
-import SummaryGrader from "@/components/SummaryGrader";
-import { supabase } from "@/lib/supabase";
+import { AnimatePresence } from "framer-motion";
 
 export default function ModulePage() {
     const params = useParams();
@@ -32,6 +35,14 @@ export default function ModulePage() {
     const module = syllabusData.find(m => m.id === moduleId);
 
     const [completedTopics, setCompletedTopics] = useState<string[]>([]);
+    const [showModuleAssessment, setShowModuleAssessment] = useState(false);
+    const [assessmentPassed, setAssessmentPassed] = useState(false);
+    const [showVivaIntro, setShowVivaIntro] = useState(false);
+    const [showSimulation, setShowSimulation] = useState(false);
+    const [simulationDone, setSimulationDone] = useState(false);
+
+    // Concatenate module content for AI test generation
+    const moduleContentSummary = module?.topics.map(t => `${t.title}: ${t.content}`).join("\n\n") || "";
 
     useEffect(() => {
         const fetchProgress = async () => {
@@ -45,6 +56,28 @@ export default function ModulePage() {
 
                 if (data) {
                     setCompletedTopics(data.map(p => p.topic_code));
+                }
+
+                // Check if module assessment already passed
+                const { data: assessmentData } = await supabase
+                    .from('assessment_logs')
+                    .select('id')
+                    .eq('user_id', session.user.id)
+                    .eq('topic_code', `MODULE_${moduleId}`);
+
+                if (assessmentData && assessmentData.length > 0) {
+                    setAssessmentPassed(true);
+                }
+
+                // Check if module simulation done (specifically for M3)
+                const { data: simData } = await supabase
+                    .from('simulation_logs')
+                    .select('id')
+                    .eq('user_id', session.user.id)
+                    .eq('topic_code', `SIM_${moduleId}`);
+
+                if (simData && simData.length > 0) {
+                    setSimulationDone(true);
                 }
             }
         };
@@ -93,10 +126,38 @@ export default function ModulePage() {
     };
 
     const handleContinue = () => {
-        if (nextModule) {
-            router.push(`/modules/${nextModule.id}`);
+        // Special logic for Module 2: Block until Peer Review (M2-04) is done
+        if (moduleId === 'module-2') {
+            const hasPeerReview = completedTopics.includes('M2-04');
+            if (!hasPeerReview) {
+                alert("Please submit your Peer Review report before proceeding to the Final Audit.");
+                return;
+            }
+        }
+
+        // If all topics done but assessment not passed, show assessment
+        const allTopicsDone = module?.topics.every(t => completedTopics.includes(t.code));
+
+        if (allTopicsDone) {
+            // Requirement for Module 3: Must do clinical simulation first
+            if (moduleId === 'module-3' && !simulationDone) {
+                setShowSimulation(true);
+                return;
+            }
+
+            if (!assessmentPassed) {
+                if (moduleId === 'module-2') {
+                    setShowVivaIntro(true);
+                } else {
+                    setShowModuleAssessment(true);
+                }
+            } else if (nextModule) {
+                router.push(`/modules/${nextModule.id}`);
+            } else {
+                router.push('/');
+            }
         } else {
-            router.push('/');
+            alert("Please complete all sections in this module before proceeding.");
         }
     };
 
@@ -128,6 +189,163 @@ export default function ModulePage() {
             animate="visible"
             className="p-8 lg:p-12 xl:p-16 max-w-7xl mx-auto"
         >
+            <AnimatePresence>
+                {showVivaIntro && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-[#0E5858]/95 backdrop-blur-xl"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="w-full max-w-xl bg-white rounded-[3rem] p-12 shadow-2xl relative overflow-hidden text-center"
+                        >
+                            <div className="w-20 h-20 bg-[#FAFCEE] text-[#00B6C1] rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 shadow-xl">
+                                <Brain size={40} />
+                            </div>
+
+                            <h2 className="text-4xl font-serif text-[#0E5858] mb-4">Final Audit: Viva Session</h2>
+                            <p className="text-gray-500 font-medium mb-10 italic">"Clinical proficiency check for Phase 1 certification."</p>
+
+                            <div className="bg-[#FAFCEE] rounded-3xl p-8 text-left mb-10 space-y-4 border border-[#00B6C1]/10">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00B6C1] mb-2">Audit Rules & Protocols</h4>
+                                <ul className="space-y-3">
+                                    <li className="flex gap-3 text-xs font-bold text-[#0E5858]/70">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-[#00B6C1] mt-1.5"></div>
+                                        <span>Time Limit: 10 Minutes to complete all segments.</span>
+                                    </li>
+                                    <li className="flex gap-3 text-xs font-bold text-[#0E5858]/70">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-[#00B6C1] mt-1.5"></div>
+                                        <span>No Mid-Way Exit: Closing the window will void the attempt.</span>
+                                    </li>
+                                    <li className="flex gap-3 text-xs font-bold text-[#0E5858]/70">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-[#00B6C1] mt-1.5"></div>
+                                        <span>Reporting: Scores are shared directly with the Founder & Admin Dashboard.</span>
+                                    </li>
+                                    <li className="flex gap-3 text-xs font-bold text-[#0E5858]/70">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-[#00B6C1] mt-1.5"></div>
+                                        <span>Retest Protocol: Low scores require clinical lead approval for re-attempt.</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    setShowVivaIntro(false);
+                                    setShowModuleAssessment(true);
+                                }}
+                                className="w-full py-5 bg-[#0E5858] text-white rounded-[1.5rem] font-bold shadow-2xl hover:bg-[#00B6C1] transition-all flex items-center justify-center gap-3"
+                            >
+                                Start Final Audit
+                                <ChevronRight size={18} />
+                            </button>
+
+                            <button
+                                onClick={() => setShowVivaIntro(false)}
+                                className="mt-6 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-[#0E5858] transition-colors"
+                            >
+                                I need more preparation
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+
+                {showSimulation && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-[#0E5858]/95 backdrop-blur-xl"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="w-full max-w-2xl bg-white rounded-[3rem] p-12 shadow-2xl relative overflow-hidden"
+                        >
+                            <div className="mb-8">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#00B6C1]/10 text-[#00B6C1] rounded-full text-[10px] font-bold uppercase tracking-widest mb-4">
+                                    <Activity size={12} />
+                                    Clinical Simulation
+                                </div>
+                                <h2 className="text-4xl font-serif text-[#0E5858] mb-2">Protocol Viva Simulation</h2>
+                                <p className="text-gray-500 font-medium">Practice your consultation pitch with our AI client before the final module check.</p>
+                            </div>
+
+                            <ClinicalSimulator
+                                topicTitle="Consultation Protocol Mastery"
+                                topicContent="Deep dive into program pitching, client engagement, and medical history discovery."
+                                topicCode={`SIM_${moduleId}`}
+                            />
+
+                            <div className="mt-10 pt-8 border-t border-gray-50 flex items-center justify-between">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Complete at least 3 turns to proceed</p>
+                                <button
+                                    onClick={() => {
+                                        setSimulationDone(true);
+                                        setShowSimulation(false);
+                                        handleContinue(); // Re-trigger flow
+                                    }}
+                                    className="px-8 py-4 bg-[#0E5858] text-white rounded-2xl font-bold hover:bg-[#00B6C1] transition-all shadow-xl"
+                                >
+                                    I've Practiced Enough
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+
+                {showModuleAssessment && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#0E5858]/80 backdrop-blur-md"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="w-full max-w-2xl bg-[#FAFCEE] rounded-[3rem] p-10 shadow-2xl relative overflow-hidden"
+                        >
+                            <button
+                                onClick={() => setShowModuleAssessment(false)}
+                                className="absolute top-8 right-8 text-[#0E5858]/40 hover:text-[#0E5858]"
+                            >
+                                Skip for now
+                            </button>
+
+                            <div className="mb-8">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#00B6C1]/10 text-[#00B6C1] rounded-full text-[10px] font-bold uppercase tracking-widest mb-4">
+                                    <Brain size={12} />
+                                    Module Certification
+                                </div>
+                                <h2 className="text-4xl font-serif text-[#0E5858] mb-2">{module.title} Check</h2>
+                                <p className="text-gray-500 font-medium">Verify your clinical knowledge before proceeding to the next segment.</p>
+                            </div>
+
+                            <AIAssessment
+                                topicTitle={module.title}
+                                topicContent={moduleContentSummary}
+                                topicCode={`MODULE_${moduleId}`}
+                                onComplete={() => {
+                                    setAssessmentPassed(true);
+                                    // Give a small delay before hiding so they see the result
+                                    setTimeout(() => {
+                                        setShowModuleAssessment(false);
+                                        if (nextModule) {
+                                            router.push(`/modules/${nextModule.id}`);
+                                        } else {
+                                            router.push('/');
+                                        }
+                                    }, 2000);
+                                }}
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Editorial Navigation */}
             <nav className="flex items-center justify-between mb-16">
                 <Link href="/" className="group flex items-center gap-4 text-[#0E5858] transition-all">
@@ -159,10 +377,6 @@ export default function ModulePage() {
                         <ChevronRight size={20} />
                     </button>
 
-                    <div className="w-px h-8 bg-gray-200 mx-2"></div>
-
-                    <button className="w-12 h-12 rounded-2xl bg-white shadow-lg flex items-center justify-center text-[#0E5858]/40 hover:text-[#0E5858] transition-all"><Bookmark size={20} /></button>
-                    <button className="w-12 h-12 rounded-2xl bg-white shadow-lg flex items-center justify-center text-[#0E5858]/40 hover:text-[#0E5858] transition-all"><Share2 size={20} /></button>
                 </div>
             </nav>
 
@@ -206,10 +420,7 @@ export default function ModulePage() {
                             </div>
                             <span className="text-sm font-bold uppercase tracking-widest text-[#00B6C1]">Advanced</span>
                         </div>
-                        <button className="w-full py-4 bg-[#00B6C1] text-[#0E5858] rounded-2xl font-bold flex items-center justify-center gap-3 shadow-xl hover:shadow-[#00B6C1]/20 hover:scale-[1.02] transition-all">
-                            <Play size={18} fill="currentColor" />
-                            Start Immersive Session
-                        </button>
+
                     </div>
                 </motion.div>
             </header>
@@ -223,113 +434,13 @@ export default function ModulePage() {
 
                 {module.topics.length > 0 ? (
                     module.topics.map((topic, index) => (
-                        <motion.div
+                        <TopicCard
                             key={topic.code}
-                            variants={topicVariants}
-                            whileHover={{ x: 10 }}
-                            className={`premium-card p-6 lg:p-8 group cursor-default relative transition-all duration-300 ${completedTopics.includes(topic.code) ? 'bg-green-50/80 border-green-200' : 'bg-white'}`}
-                        >
-                            {/* Absolute Positioned Tickbox */}
-                            <button
-                                onClick={() => toggleTopic(topic.code)}
-                                className={`absolute top-4 right-4 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all z-20 ${completedTopics.includes(topic.code)
-                                    ? 'bg-green-500 border-green-500 text-white'
-                                    : 'border-gray-200 text-gray-200 hover:border-green-500 hover:text-green-500'
-                                    }`}
-                            >
-                                <CheckCircle size={14} />
-                            </button>
-                            <div className="flex flex-col xl:flex-row gap-6">
-                                {/* Topic Index */}
-                                <div className="shrink-0 flex flex-col items-center">
-                                    <div className={`w-12 h-12 border border-[#00B6C1]/20 rounded-2xl flex items-center justify-center text-[#00B6C1] text-lg font-bold shadow-inner transition-all duration-700 font-serif ${completedTopics.includes(topic.code) ? 'bg-green-100 border-green-300' : 'bg-[#FAFCEE] group-hover:bg-[#00B6C1] group-hover:text-white'}`}>
-                                        {index + 1 < 10 ? `0${index + 1}` : index + 1}
-                                    </div>
-                                    <div className="mt-4 flex flex-col items-center gap-1">
-                                        <div className="w-0.5 h-8 bg-gradient-to-b from-[#00B6C1]/30 to-transparent"></div>
-                                        <span className="text-[8px] font-bold text-[#00B6C1] tracking-widest rotate-90 translate-y-4">{topic.code}</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex-1">
-                                    <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 gap-6">
-                                        <h2 className={`text-2xl font-serif text-[#0E5858] leading-tight group-hover:text-[#00B6C1] transition-colors decoration-[#00B6C1]/30 decoration-2 underline-offset-8 group-hover:underline ${completedTopics.includes(topic.code) ? 'line-through decoration-green-500' : ''}`}>
-                                            {topic.title}
-                                        </h2>
-                                        {topic.owner && (
-                                            <div className="flex items-center gap-3 px-5 py-2.5 bg-gray-50 border border-gray-100 rounded-2xl">
-                                                <div className="w-8 h-8 rounded-xl bg-[#00B6C1] flex items-center justify-center text-white"><User size={14} /></div>
-                                                <div>
-                                                    <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">Mentor Lead</p>
-                                                    <p className="text-xs font-bold text-[#0E5858]">{topic.owner}</p>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div
-                                        className={`text-base text-gray-500 font-medium mb-6 leading-relaxed tracking-tight group-hover:text-[#0E5858] transition-colors ${completedTopics.includes(topic.code) ? 'line-through opacity-60' : ''}`}
-                                        dangerouslySetInnerHTML={{ __html: topic.content }}
-                                    />
-
-                                    <div className="flex flex-wrap items-center gap-6">
-                                        {topic.outcome && (
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-xl bg-[#FAFCEE] flex items-center justify-center text-[#00B6C1] shadow-sm"><CheckCircle size={18} /></div>
-                                                <div>
-                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">Learning Outcome</p>
-                                                    <p className="text-sm font-bold text-[#0E5858]">{topic.outcome}</p>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {topic.links && topic.links.length > 0 && (
-                                            <div className="flex items-center gap-3">
-                                                {topic.links.map(link => (
-                                                    <a
-                                                        key={link.label}
-                                                        href={link.url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-3 px-6 py-3 bg-white text-[#0E5858] shadow-xl rounded-2xl text-xs font-bold border border-gray-50 hover:bg-[#00B6C1] hover:text-white transition-all"
-                                                    >
-                                                        <ExternalLink size={14} />
-                                                        {link.label}
-                                                    </a>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* AI Mentor Training Suite */}
-                                    <div className="mt-10 pt-10 border-t border-[#00B6C1]/10 space-y-8">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-xl bg-[#00B6C1] flex items-center justify-center text-white"><Sparkles size={14} /></div>
-                                            <h4 className="text-xs font-bold text-[#0E5858] uppercase tracking-[0.2em]">AI Training Suite</h4>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                                            <div className="space-y-6">
-                                                <div className="p-6 bg-[#FAFCEE]/50 rounded-3xl border border-[#00B6C1]/10">
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Phase 1: Knowledge Check</p>
-                                                    <AIAssessment topicTitle={topic.title} topicContent={topic.content} topicCode={topic.code} />
-                                                </div>
-                                                <div className="p-6 bg-[#FAFCEE]/50 rounded-3xl border border-[#00B6C1]/10">
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Phase 2: Live Interaction</p>
-                                                    <ClinicalSimulator topicTitle={topic.title} topicContent={topic.content} topicCode={topic.code} />
-                                                </div>
-                                            </div>
-
-                                            <div className="p-6 bg-[#FAFCEE]/50 rounded-3xl border border-[#00B6C1]/10 bg-gradient-to-br from-white to-[#FAFCEE]">
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Phase 3: Learning Audit</p>
-                                                <SummaryGrader topicTitle={topic.title} topicContent={topic.content} topicCode={topic.code} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </motion.div>
+                            topic={topic}
+                            index={index}
+                            isCompleted={completedTopics.includes(topic.code)}
+                            onToggleComplete={() => toggleTopic(topic.code)}
+                        />
                     ))
                 ) : (
                     <div className="premium-card p-20 text-center flex flex-col items-center">
@@ -343,6 +454,74 @@ export default function ModulePage() {
                     </div>
                 )}
             </div>
+
+            {/* BN Ecosystem Hub (Only for Module 1) */}
+            {moduleId === 'module-1' && (
+                <section className="mt-24 mb-10">
+                    <div className="flex items-center gap-6 mb-12">
+                        <div className="w-1.5 h-10 bg-[#00B6C1] rounded-full"></div>
+                        <div>
+                            <h3 className="text-3xl font-serif text-[#0E5858]">BN Ecosystem Hub</h3>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-1">Cross-Platform Resource Deep Links</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {[
+                            {
+                                title: "BN Shop",
+                                url: "https://www.balancenutrition.in/shop",
+                                desc: "E-Commerce & Product Inventory",
+                                icon: ShoppingBag,
+                                color: "#FFCC00"
+                            },
+                            {
+                                title: "Nutripreneur",
+                                url: "https://nutripreneur.balancenutrition.in/",
+                                desc: "Entrepreneurial Learning Platform",
+                                icon: Target,
+                                color: "#00B6C1"
+                            },
+                            {
+                                title: "BN Franchise",
+                                url: "https://bnlifecentre.balancenutrition.in/#",
+                                desc: "Life Centre & Franchise Operations",
+                                icon: Globe,
+                                color: "#0E5858"
+                            },
+                            {
+                                title: "Smart Clinic",
+                                url: "https://smart-clinic-v2.vercel.app/",
+                                desc: "Clinical OS & Patient Management",
+                                icon: Activity,
+                                color: "#FF5733"
+                            }
+                        ].map((link, i) => (
+                            <motion.a
+                                key={i}
+                                href={link.url}
+                                target="_blank"
+                                whileHover={{ y: -8, scale: 1.02 }}
+                                className="premium-card p-8 group relative overflow-hidden flex flex-col items-center text-center hover:border-[#00B6C1]/30 transition-all border border-transparent bg-white shadow-xl"
+                            >
+                                <div
+                                    className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-6 shadow-xl transition-all group-hover:rotate-12"
+                                    style={{ backgroundColor: `${link.color}15`, color: link.color }}
+                                >
+                                    <link.icon size={28} />
+                                </div>
+                                <h4 className="text-xl font-serif font-bold text-[#0E5858] mb-2">{link.title}</h4>
+                                <p className="text-xs text-gray-400 leading-relaxed px-4 font-medium">{link.desc}</p>
+
+                                <div className="mt-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#00B6C1] opacity-0 group-hover:opacity-100 transition-all">
+                                    Launch Platform
+                                    <ArrowRight size={14} />
+                                </div>
+                            </motion.a>
+                        ))}
+                    </div>
+                </section>
+            )}
 
             {/* Editorial Footer */}
             {/* Editorial Footer */}

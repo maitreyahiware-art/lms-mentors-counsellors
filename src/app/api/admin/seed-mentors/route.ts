@@ -12,6 +12,9 @@ const supabaseAdmin = createClient(
     }
 );
 
+console.log('Connecting to Supabase at:', process.env.NEXT_PUBLIC_SUPABASE_URL); // Debugging
+
+
 export async function POST() {
     const mentors = [
         { name: 'Anjali Mehta', email: 'anjali.m@balancenutrition.in' },

@@ -1,3 +1,17 @@
+
+import {
+    BookOpen,
+    CheckCircle2,
+    Briefcase,
+    Layers,
+    Leaf,
+    ListChecks,
+    Target,
+    Activity,
+    Share2,
+    FileSpreadsheet
+} from "lucide-react";
+
 export interface Topic {
     code: string;
     title: string;
@@ -7,6 +21,11 @@ export interface Topic {
     assessment?: string;
     owner?: string;
     icon?: string;
+    hasLive?: boolean;
+    isAssignment?: boolean;
+    assignmentQuestions?: string[];
+    caseStudyLinks?: string[];
+    persona?: { story: string; goal: string };
     links?: { label: string; url: string }[];
 }
 
@@ -24,395 +43,459 @@ export interface Module {
 }
 
 export const syllabusData: Module[] = [
-    // ===== SEGMENT 1: Business Overview & Brand Immersion =====
+    // ===== MODULE 1: Pre-joining / Orientation =====
     {
-        id: 'segment-1',
-        title: 'Segment 1: Business Overview',
-        subtitle: 'How We Work, Founder Briefing & Brand Recognition',
-        description: 'Understanding our business, programs, and brand journey. Includes competitor study and peer assessments.',
-        type: 'segment',
+        id: 'module-1',
+        title: 'Module 1: Pre-joining Orientation',
+        subtitle: 'Brand Immersion & Research',
+        description: 'Deep dive into Balance Nutrition ecosystem, website, vision, and social media presence before joining.',
+        type: 'pre-joining',
+        progress: 0,
+        status: 'Available',
+        hasAssignment: true,
+        icon: 'cleanse',
+        topics: [
+            {
+                code: 'M1-01',
+                title: 'Website Deep Dive',
+                content: 'Study the core platform to understand the client interface:<br/><br/>• <strong>Main Website</strong>: Explore <a href="https://www.balancenutrition.in/" target="_blank" class="text-blue-600 hover:underline">balancenutrition.in</a><br/>• <strong>Recipes</strong>: Review the <a href="https://www.balancenutrition.in/recipes" target="_blank" class="text-blue-600 hover:underline">Recipes Section</a><br/>• <strong>Health Reads</strong>: Read key articles on <a href="https://www.balancenutrition.in/blog/health-reads#" target="_blank" class="text-blue-600 hover:underline">Health Blogs</a>',
+                links: [
+                    { label: 'Main Website', url: 'https://www.balancenutrition.in/' },
+                    { label: 'Recipes', url: 'https://www.balancenutrition.in/recipes' },
+                    { label: 'Health Blogs', url: 'https://www.balancenutrition.in/blog/health-reads#' },
+                    { label: 'App Workflow Doc', url: 'https://docs.google.com/document/d/13ueBq-I6O53PrHbPIkifPPZ7tE1HZ9Bl-iTExkhM2Fk/edit?tab=t.0' }
+                ]
+            },
+            {
+                code: 'M1-02',
+                title: 'Brand Vision & Mission',
+                content: 'Review the brochures and understand the core vision of Balance Nutrition. Understand what we stand for and our promise to clients.',
+                links: [{ label: 'Brand Brochure', url: 'https://youtu.be/qtjKDiRAaXw' }]
+            },
+            {
+                code: 'M1-03',
+                title: 'Social Media Assessment',
+                content: 'Study all official channels. <strong>Action:</strong> Review links and note down key takeaways and feedback.<br/><br/>• <strong>Instagram</strong>: Khyati Rupani Official<br/>• <strong>LinkedIn</strong>: BN Corporate & Founder Profiles<br/>• <strong>YouTube</strong>: Wellness & Brand Channel',
+                links: [
+                    { label: 'Instagram BN', url: 'https://instagram.com/balancenutrition.in?igshid=YmMyMTA2M2Y=' },
+                    { label: 'Instagram Khyati', url: 'https://instagram.com/nutritionist_khyatirupani?igshid=YmMyMTA2M2Y=' },
+                    { label: 'LinkedIn BN', url: 'https://www.linkedin.com/company/balance-nutrition-weight-loss-&-more/' },
+                    { label: 'LinkedIn Khyati', url: 'https://www.linkedin.com/in/nutritionistkhyatirupani' },
+                    { label: 'LinkedIn Vishal', url: 'https://www.linkedin.com/in/vishal-rupani-501a3b4' },
+                    { label: 'YouTube', url: 'https://youtube.com/c/BalanceNutrition' }
+                ]
+            }
+        ]
+    },
+
+    // ===== MODULE 2: Business Overview =====
+    {
+        id: 'module-2',
+        title: 'Module 2: Business Overview',
+        subtitle: 'Operational Workflows & Product Training',
+        description: 'Mastering the internal tools, programs, e-kit, mobile application, and counselor dashboard.',
+        type: 'module',
         progress: 0,
         status: 'Available',
         hasAssignment: true,
         icon: 'business',
         topics: [
             {
-                code: 'S1-01',
+                code: 'M2-01',
                 title: 'How We Work',
-                content: 'Understand client journey from purchase to completion - complete business workflow',
-                links: [{ label: 'How We Work Video', url: '#' }]
+                content: 'Video explaining the complete client journey from purchase to completion.',
+                links: [{ label: 'How We Work Video', url: 'https://youtu.be/WpaY3G9RGyY' }]
             },
             {
-                code: 'S1-02',
-                title: 'Meet Our Founder - Khyati Ma\'am',
-                content: 'Watch the founder introduction video',
-                links: [{ label: 'Khyati Ma\'am Video', url: '#' }]
+                code: 'M2-02',
+                title: 'Product Training (Kits)',
+                content: 'Deep dive into the specific kits and lifestyle guides provided to clients.',
+                links: [
+                    { label: 'Eating Portions PDF', url: 'https://balancenutrition.in/media/ekits/eat_in_portions.pdf' },
+                    { label: 'Alcohol Guide PDF', url: 'https://balancenutrition.in/media/ekits/alcohol_guide.pdf' },
+                    { label: 'E-Kits Ecosystem', url: 'https://www.youtube.com/watch?v=lCbJs_FYueQ&t=444s' },
+                    { label: 'Restaurant Guide PDF', url: 'https://balancenutrition.in/media/ekits/restaurant_menu.pdf' }
+                ]
             },
             {
-                code: 'S1-03',
-                title: 'Khyati Ma\'am\'s Journey',
-                content: 'Understand the founder\'s journey and vision',
-                links: [{ label: 'Journey Video', url: '#' }]
+                code: 'M2-03',
+                title: 'Program Training',
+                content: 'Overview of all BN medical and lifestyle programs. Study the program structures and clinical inclusions.',
+                links: [
+                    { label: 'BN Programs Guide', url: 'https://drive.google.com/file/d/18SQMmnz4riJ17d--GWEvVuvaLQ9iuzKy/view?usp=sharing' },
+                    { label: 'Phase 1 Programs', url: '/content-bank?search=Phase 1' },
+                    { label: 'Phase 2 Programs', url: '/content-bank?search=Phase 2' }
+                ]
             },
             {
-                code: 'S1-04',
-                title: 'Founder Video Series',
-                content: 'Go through Khyati Ma\'am\'s complete YouTube video series',
-                links: [{ label: 'YouTube Series', url: '#' }]
-            },
-            {
-                code: 'S1-05',
-                title: 'Brand Recognition',
-                content: 'Understand how Balance Nutrition is recognized in the industry',
-                links: [{ label: 'Brand Recognition', url: '#' }]
-            },
-            {
-                code: 'S1-06',
-                title: 'Vision of the Brand',
-                content: 'Learn about the brand vision and long-term goals',
-                links: [{ label: 'Vision Video', url: '#' }]
-            },
-            {
-                code: 'S1-07',
-                title: 'Award by Times Now',
-                content: 'Balance Nutrition award recognition and media coverage',
-                links: [{ label: 'Award Video', url: '#' }]
-            },
-            {
-                code: 'S1-08',
-                title: 'Vishal Sir BTVI Interview',
-                content: 'Watch the BTVI interview with Vishal Sir',
-                links: [{ label: 'BTVI Interview', url: '#' }]
-            }
-        ]
-    },
-    {
-        id: 'website-deep-dive',
-        title: 'Website & Blog Mastery',
-        subtitle: '',
-        description: 'Read about the website in detail, go through all programs, recipes, cuisines, supplements, and health blogs, Tips for acidity, bloating, cold and flu, constipation, migraine, diabetes, wedding guide, party binge, thyroid, PCOS, benefits of neutraceuticals, Benefits of seeds.',
-        type: 'segment',
-        progress: 0,
-        status: 'Available',
-        hasAssignment: false,
-        topics: [
-            {
-                code: 'WEB-01',
-                title: 'Website Overview',
-                content: 'Navigate the complete Balance Nutrition website and understand the user journey',
-                links: [{ label: 'Website', url: 'https://www.balancenutrition.in/' }]
-            },
-            {
-                code: 'WEB-02',
-                title: 'Recipes Section',
-                content: 'Explore different cuisines, supplements, drinks, breakfast options, and galactogogues',
-                links: [{ label: 'Recipes', url: 'https://www.balancenutrition.in/recipes' }]
-            },
-            {
-                code: 'WEB-03',
-                title: 'Health Blogs',
-                content: 'Read tips for acidity, bloating, cold & flu, constipation, migraine, diabetes, wedding guide, party binge, thyroid, PCOS, benefits of nutraceuticals, benefits of seeds',
-                links: [{ label: 'Health Reads', url: 'https://www.balancenutrition.in/blog/health-reads' }]
-            }
-        ]
-    },
-    {
-        id: 'social-media-handles',
-        title: 'Follow Our Social Media Handles',
-        subtitle: 'Stay Connected with the BN Community',
-        description: 'Follow all official social media handles to stay updated with the latest clinical insights.',
-        type: 'segment',
-        progress: 0,
-        status: 'Available',
-        hasAssignment: false,
-        icon: 'social',
-        topics: [
-            { code: 'SM-01', title: 'Khyati Instagram', content: 'Follow Khyati Ma\'am on Instagram', links: [{ label: 'Khyati Instagram', url: '#' }] },
-            { code: 'SM-02', title: 'Balance Nutrition Instagram', content: 'Follow the official BN Instagram page', links: [{ label: 'BN Instagram', url: '#' }] },
-            { code: 'SM-03', title: 'Balance Nutrition LinkedIn', content: 'Connect on LinkedIn for professional updates', links: [{ label: 'BN LinkedIn', url: '#' }] },
-            { code: 'SM-04', title: 'Khyati LinkedIn', content: 'Connect with Khyati Ma\'am on LinkedIn', links: [{ label: 'Khyati LinkedIn', url: '#' }] },
-            { code: 'SM-05', title: 'Vishal Sir LinkedIn', content: 'Connect with Vishal Sir on LinkedIn', links: [{ label: 'Vishal LinkedIn', url: '#' }] },
-            { code: 'SM-06', title: 'YouTube', content: 'Subscribe to the official YouTube channel', links: [{ label: 'YouTube', url: '#' }] },
-            { code: 'SM-07', title: 'Pinterest', content: 'Follow on Pinterest for visual content', links: [{ label: 'Pinterest', url: '#' }] },
-            { code: 'SM-08', title: 'Twitter', content: 'Follow on Twitter for quick updates', links: [{ label: 'Twitter', url: '#' }] }
-        ]
-    },
-    {
-        id: 'competitor-study',
-        title: 'Competitor Study',
-        subtitle: 'Market Research & Peer Assessment',
-        description: 'Research competitors and complete peer assessment study.',
-        type: 'segment',
-        progress: 0,
-        status: 'Available',
-        hasAssignment: true,
-        topics: [
-            {
-                code: 'CS-01',
-                title: 'BN Competitors Research',
-                content: 'Conduct a thorough analysis of our primary competitors. Focus on their social media presence, program offerings, and unique selling points:<br/><br/>• <strong>HealthifyMe</strong>: Analyze their AI-driven approach and user engagement.<br/>• <strong>SugarFit</strong>: Study their diabetes reversal programs and technology integration.<br/>• <strong>Fitelo</strong>: Review their personalized diet plans and customer testimonials.',
-                assessment: 'Submit competitor analysis'
-            },
-            {
-                code: 'CS-02',
-                title: "Khyati Ma'am's Competitors",
-                content: "Research the personal brands of key industry figures. Observe their content style, audience interaction, and topics covered:<br/><br/>• <strong>Anjali Mukherjee</strong><br/>• <strong>Rashi Chaudhary</strong><br/>• <strong>Nisha Malhotra</strong><br/>• <strong>Gunjan Shouts</strong><br/>• <strong>Neha Ranglani</strong><br/>• <strong>Richa Gangani</strong>",
-                assessment: 'Submit competitor profiles'
-            },
-            {
-                code: 'CS-03',
-                title: 'Peer Assessment Study',
-                content: 'Engage in a practical peer assessment exercise to understand market positioning:<br/><br/>• <strong>Competitor Profiles</strong>: Create detailed profiles for 3 different competitors.<br/>• <strong>BN Peer Profiles</strong>: Create profiles for 3 Balance Nutrition peers.<br/>• <strong>Comparison</strong>: Analyze differences in approach and service delivery.',
-                assessment: 'Submit Peer Assessment Sheet'
+                code: 'M2-04',
+                title: 'Peer Review',
+                content: 'Conduct a clinical and commercial audit of Balance Nutrition versus market peers.<br/><br/><strong>Objective:</strong> To understand how Balance Nutrition stands against key market competitors in terms of clinical approach, sales pitching, and digital presence.<br/><br/><strong>Instructions:</strong><br/>1. Create Your persona: Using the example below, define your own age, weight and goal for this audit.<br/>2. Select 2 Peer Companies & 2 Peer Dieticians to audit alongside <strong>Balance Nutrition</strong> and <strong>Khyati Rupani</strong>.<br/>3. Conduct the research and fill the audit columns.',
+                isAssignment: true,
+                persona: {
+                    story: "Example: I am 35 years old, 5'6\" tall, and weigh 230 lbs. I have been overweight for a long time but don’t have any health problems.",
+                    goal: "Lose weight and get rid of my obesity."
+                },
+                assignmentQuestions: [
+                    "Lead Capture & Enquiries:Where and How was the initial enquiry process (Website/WhatsApp/Social Media)?",
+                    "Speed of Activation: How long did it take for the first response and what was the mode of contact?",
+                    "First Impression call: Evaluate the tone, energy, and professionalism of the very first 'Activation Call'.",
+                    "Health Discovery: Did the counselor deep-dive into your medical history and lifestyle, or was it a generic pitch?",
+                    "Problem-to-Solution Transition: How effectively did they link your health goals to their specific program features?",
+                    "Program Pitching Quality: Evaluate the clinical confidence and clarity during the program recommendation.",
+                    "Pricing Strategy: How was the pricing introduced? Was there 'Limited Time' pressure or genuine value building?",
+                    "Objection Handling: How did they manage your concerns about cost, duration, or previous failed attempts?",
+                    "With complete unbiased opinion — which company would you purchase your health program from and why?",
+                    "Digital Content Quality: Analyze the scientific vs promotional balance of their social media content.",
+                    "Relatability & Trust: Who felt more authentic, approachable, and trustworthy in their digital presence?"
+                ],
+                links: [
+                    { label: 'Healthify Me', url: 'https://www.healthifyme.com/' },
+                    { label: 'Sugar Fit', url: 'https://www.sugarfit.com/' },
+                    { label: 'Fitelo', url: 'https://fitelo.co/' },
+                    { label: 'Fittr', url: 'https://www.fittr.com/' },
+                    { label: 'Fitterfly', url: 'https://www.fitterfly.com/' },
+                    { label: 'Livofy', url: 'https://www.livofy.com/' },
+                    { label: 'Anjali Mukherjee IG', url: 'https://www.instagram.com/anjalimukherjee/' },
+                    { label: 'Rashi Chaudhary IG', url: 'https://www.instagram.com/rashichaudhary/' },
+                    { label: 'Neha Ranglani IG', url: 'https://www.instagram.com/neharanglani_/?hl=en' },
+                    { label: 'Pooja Makhija IG', url: 'https://www.instagram.com/poojamakhija/?hl=en' }
+                ]
             }
         ]
     },
 
-    // ===== SEGMENT 2: Program Training =====
+    // ===== MODULE 3: Consultation Training =====
     {
-        id: 'segment-2',
-        title: 'Segment 2: Program Training',
-        subtitle: 'Explanation given about the different programs (Learn the features of program, rates should be remembered, what is speciality of each program-Details understanding about phase 2 programs)',
-        description: 'Learn features of each program, rates, and speciality. Detailed understanding about Phase 1 and Phase 2 programs.',
-        type: 'segment',
-        progress: 0,
-        status: 'Available',
-        hasAssignment: true,
-        icon: 'programs',
-        topics: [
-            {
-                code: 'PT-00',
-                title: 'Program Training Overview',
-                content: 'Video explaining all the different programs that we offer',
-                links: [{ label: 'Program Training Video', url: '#' }]
-            }
-        ]
-    },
-    {
-        id: 'phase-1-programs',
-        title: 'Phase 1 Programs',
-        subtitle: 'Core Weight Loss Programs',
-        description: 'Learn about Weight Loss Pro, Weight Loss Plus, Beat PCOS, and Slim Smart 30.',
-        type: 'segment',
-        progress: 0,
-        status: 'Available',
-        hasAssignment: false,
-        topics: [
-            { code: 'P1-01', title: 'Weight Loss Pro Program', content: 'Learn features, pricing, and target audience for Weight Loss Pro', links: [{ label: 'Video', url: '#' }] },
-            { code: 'P1-02', title: 'Weight Loss Plus Program', content: 'Learn features, pricing, and target audience for Weight Loss Plus', links: [{ label: 'Video', url: '#' }] },
-            { code: 'P1-03', title: 'Beat PCOS Program', content: 'Specialized program for PCOS weight loss management', links: [{ label: 'Video', url: '#' }] },
-            { code: 'P1-04', title: 'Slim Smart 30 Program', content: '30-day smart weight loss program details', links: [{ label: 'Video', url: '#' }] }
-        ]
-    },
-    {
-        id: 'phase-2-programs',
-        title: 'Phase 2 Programs',
-        subtitle: 'Advanced Transformation Programs',
-        description: 'Learn about Renue, Body Transformation, Plateau Breaker, Active, Reform IF, and Slimpossible 60.',
-        type: 'segment',
-        progress: 0,
-        status: 'Available',
-        hasAssignment: false,
-        topics: [
-            { code: 'P2-01', title: 'Renue Program', content: 'Premium renewal and rejuvenation program', links: [{ label: 'Video', url: '#' }] },
-            { code: 'P2-02', title: 'Body Transformation Program', content: 'Complete body transformation methodology', links: [{ label: 'Video', url: '#' }] },
-            { code: 'P2-03', title: 'Plateau Breaker Program', content: 'For clients stuck in weight loss plateaus', links: [{ label: 'Video', url: '#' }] },
-            { code: 'P2-04', title: 'Active Program', content: 'For active lifestyle individuals', links: [{ label: 'Video', url: '#' }] },
-            { code: 'P2-05', title: 'Reform Intermittent Fasting', content: 'IF-based weight management program', links: [{ label: 'Video', url: '#' }] },
-            { code: 'P2-06', title: 'Slimpossible 60', content: '60-day intensive transformation program', links: [{ label: 'Video', url: '#' }] }
-        ]
-    },
-    {
-        id: 'health-score-practical',
-        title: 'Health Score Practical',
-        subtitle: 'Lead Generation Tool Training',
-        description: 'Take health score with artificial profiles and understand how leads are generated and covered.',
-        type: 'segment',
+        id: 'module-3',
+        title: 'Module 3: Consultation Training',
+        subtitle: 'Client Engagement & Clinical Mastery',
+        description: 'Learning to pitch programs, engage clients day-to-day, and analyze clinical health journeys.',
+        type: 'module',
         progress: 0,
         status: 'Available',
         hasAssignment: true,
         icon: 'health',
         topics: [
             {
-                code: 'HS-01',
-                title: 'Take Health Score',
-                content: 'Create your own profile with artificial inflated weight and medical conditions',
-                links: [{ label: 'Balance Health Score', url: '#' }],
-                assessment: 'Submit Health Score Report'
+                code: 'M3-01',
+                title: 'Consultation Calls',
+                content: 'Observe live calls by senior mentors and understand call etiquette.',
+                links: [
+                    { label: 'Live Calls Drive', url: 'https://drive.google.com/drive/folders/1gGNjm008rEY6MoiF8hZze5t1LMkK6LpU' }
+                ]
             },
             {
-                code: 'HS-02',
-                title: 'Peer Health Scores',
-                content: 'Take health score with 3 peers and compare results',
-                assessment: 'Submit 3 peer Health Score reports'
+                code: 'M3-02',
+                title: 'Call Recordings',
+                content: 'Review successful consultation recordings and Khyati Ma\'am\'s direct client interactions.',
+                links: [
+                    { label: 'Consultation Recording 1', url: 'https://drive.google.com/file/d/1Wlaj1zJ7BWVcugHtid_Qal23RytKPiPF/view?usp=sharing' },
+                    { label: 'Khyati Consultation Call', url: 'https://drive.google.com/drive/u/0/folders/1no3Bzra5O3CqdDQqhOUuetrNhbAcsXNc' }
+                ]
             },
             {
-                code: 'HS-03',
-                title: 'Competitor Health Scores',
-                content: 'Take health score comparing with competitor profiles',
-                assessment: 'Submit competitor Health Score analysis'
+                code: 'M3-03',
+                title: 'Case Studies',
+                content: 'Analyze specific client cases and their health journeys.',
+                links: [
+                    { label: 'Case Studies Folder', url: 'https://drive.google.com/drive/folders/10SFZyik_Y4Mw8RkD8x-jz-RxiYIN7Dv6?usp=sharing' }
+                ],
+                caseStudyLinks: [
+                    "https://docs.google.com/presentation/d/1evTjDAlsTwek7th4ROos1rHo5CpEwczE/edit?usp=drive_link",
+                    "https://docs.google.com/presentation/d/1zZ1HWrhFWFxtgAzBAlIVmCiFJzp7ozoi/edit?usp=drive_link",
+                    "https://docs.google.com/presentation/d/1vWqg29CmqDKvsf4iMUr3JSWWD8tiZ0QK/edit?usp=drive_link",
+                    "https://docs.google.com/presentation/d/1x7CEHyQ_QpG0t_vIE3bMVdQ-tLvFV-BT/edit?usp=drive_link",
+                    "https://docs.google.com/presentation/d/1wkSSD0O-zVh03L78tcPiumgo6_aOCEh_/",
+                    "https://docs.google.com/presentation/d/1z7EE9GLwCYa-IPTXooEmM1I2nmWN8jaC/",
+                    "https://docs.google.com/presentation/d/1H2jTl6f6HWZwg0EjCQemXBvDBy3a6571/",
+                    "https://docs.google.com/presentation/d/1bYOuG1eAK4gI3i04HNQ_v8wVBSkMpLw-/",
+                    "https://docs.google.com/presentation/d/12lQ7zOojOnjrIQvWoGV3deg5uEXD-R73/",
+                    "https://docs.google.com/presentation/d/1yk643b3nqYTHWRyaqy9aE7gUkompH0c9/",
+                    "https://docs.google.com/presentation/d/1LIe39pHyV0jrJqD6stVnJAkldQSfhF2V/",
+                    "https://docs.google.com/presentation/d/1bTsF-dbhUi6w7AHP9zQuFrL-AIfQU1jx/",
+                    "https://docs.google.com/presentation/d/1oOmD5NVRtYcfGRBdPVr6_ll2sMNxIIpD/",
+                    "https://docs.google.com/presentation/d/1e8RI6bUG3lUmkHHhIj4wP-0FT6KJDcay/",
+                    "https://docs.google.com/presentation/d/1Ph-pJDQxQiNgb0-K3uqrrw23ZgjIj3Cr/"
+                ]
             },
             {
-                code: 'HS-04',
-                title: 'HS Lead Boosting',
-                content: 'Learn ways to boost Health Score leads and how counselors cover HS leads'
+                code: 'M3-04',
+                title: 'Program Pitching',
+                content: 'Learn how to pitch relevant programs to potential clients with the right clinical approach.',
+                links: [
+                    { label: 'Program Pitching Guide', url: 'https://drive.google.com/file/d/1nnF007TpMjsPELUtlZ6D5tQYk-QjHpkq/view?usp=sharing' }
+                ]
             },
             {
-                code: 'HS-05',
-                title: 'Brand USP',
-                content: 'List down our brand USPs based on Health Score analysis',
-                assessment: 'Submit Brand USP document'
+                code: 'M3-05',
+                title: 'Day-to-Day Engagement',
+                content: 'Strategies for daily client engagement, motivation, and milestone tracking.',
+                links: [
+                    { label: 'Engagement Guide', url: 'https://drive.google.com/file/d/1mrrNxIUOXRKXPVYZsDYvf64fp-8gbOS2/view?usp=sharing' }
+                ]
             }
         ]
     },
 
-    // ===== SEGMENT 3: Cleanse Programs =====
+    // ===== MODULE 4: Dashboard Training =====
     {
-        id: 'segment-3',
-        title: 'Segment 3: Cleanse Programs',
-        subtitle: 'Short & Affordable Programs',
-        description: 'All cleanse programs - from 1-day to 14-day specialized detox and cleanse plans.',
-        type: 'segment',
-        progress: 0,
-        status: 'Available',
-        hasAssignment: false,
-        icon: 'cleanse',
-        topics: [
-            { code: 'CL-00', title: 'Cleanse Programs Overview', content: 'Introduction to all cleanse programs', links: [{ label: 'Cleanse Programs', url: '#' }] }
-        ]
-    },
-    {
-        id: '1-day-cleanses',
-        title: '1-Day Cleanses',
-        subtitle: 'Quick Detox Programs',
-        description: 'Single day intensive cleanse options for quick results.',
-        type: 'segment',
-        progress: 0,
-        status: 'Available',
-        hasAssignment: false,
-        topics: [
-            { code: '1D-01', title: 'Weight Loss Cleanse', content: 'Quick 1-day weight loss kickstart', links: [{ label: 'Details', url: '#' }] },
-            { code: '1D-02', title: 'Sugar Detox Cleanse', content: 'Break sugar addiction in one day', links: [{ label: 'Details', url: '#' }] },
-            { code: '1D-03', title: 'Flat Stomach Cleanse', content: 'Reduce bloating and flatten stomach', links: [{ label: 'Details', url: '#' }] },
-            { code: '1D-04', title: 'Post Festive Detox Cleanse', content: 'Reset after festive indulgence', links: [{ label: 'Details', url: '#' }] }
-        ]
-    },
-    {
-        id: '3-day-cleanses',
-        title: '3-Day Cleanses',
-        subtitle: 'Intensive Reset Programs',
-        description: 'Three-day targeted cleanse programs for specific health concerns.',
-        type: 'segment',
-        progress: 0,
-        status: 'Available',
-        hasAssignment: false,
-        topics: [
-            { code: '3D-01', title: 'Acidity Correction Cleanse', content: 'Fix chronic acidity issues', links: [{ label: 'Details', url: '#' }] },
-            { code: '3D-02', title: 'Immune Boosting Cleanse', content: 'Strengthen immunity naturally', links: [{ label: 'Details', url: '#' }] },
-            { code: '3D-03', title: 'Constipation Correction Cleanse', content: 'Improve digestive regularity', links: [{ label: 'Details', url: '#' }] },
-            { code: '3D-04', title: 'Gut Reset Detox Cleanse', content: 'Complete gut health restoration', links: [{ label: 'Details', url: '#' }] }
-        ]
-    },
-    {
-        id: '10-day-programs',
-        title: '10-Day Programs',
-        subtitle: 'Extended Wellness Plans',
-        description: 'Ten-day structured diet and reform plans.',
-        type: 'segment',
-        progress: 0,
-        status: 'Available',
-        hasAssignment: false,
-        topics: [
-            { code: '10D-01', title: '10-Day Diet Plan', content: 'Structured 10-day diet program', links: [{ label: 'Details', url: '#' }] },
-            { code: '10D-02', title: '10-Day Reform Plan', content: 'Lifestyle reform in 10 days', links: [{ label: 'Details', url: '#' }] }
-        ]
-    },
-    {
-        id: '14-day-programs',
-        title: '14-Day Programs',
-        subtitle: 'Comprehensive Transformation',
-        description: 'Two-week intensive transformation programs.',
-        type: 'segment',
-        progress: 0,
-        status: 'Available',
-        hasAssignment: false,
-        topics: [
-            { code: '14D-01', title: 'Transform 14 Days', content: 'Complete 2-week transformation cleanse', links: [{ label: 'Details', url: '#' }] },
-            { code: '14D-02', title: 'Shapeup 14 Days', content: 'Intensive 2-week body shaping plan', links: [{ label: 'Details', url: '#' }] }
-        ]
-    },
-
-    // ===== DAY 1 DELIVERABLES =====
-    {
-        id: 'day-1-deliverables',
-        title: 'Day 1 Deliverables',
-        subtitle: 'AMA Session & Summary Mail',
-        description: 'On Day 1 at the office: Send summary mail of what you have done and attend AMA session with founders.',
-        type: 'checklist',
+        id: 'module-4',
+        title: 'Module 4: Dashboard Training',
+        subtitle: 'Mastering the Counselor Operating System',
+        description: 'Guided walkthrough of the counselor dashboard, lead tracking, and the prescription writing engine.',
+        type: 'module',
         progress: 0,
         status: 'Available',
         hasAssignment: true,
+        icon: 'layers',
         topics: [
             {
-                code: 'D1-01',
-                title: 'Summary Mail',
-                content: 'Send a summary email of your BN Overview study to HR',
-                assessment: 'Submit Summary Mail'
+                code: 'M4-01',
+                title: 'Dashboard Ecosystem Overview',
+                content: 'Experience the primary dashboard interface. Learn to navigate between active clients, pending assessments, and lead queues.',
+                outcome: 'Navigate the counselor ecosystem with 100% efficiency.',
+                links: [
+                    { label: 'Dashboard Zoom Training', url: 'https://us06web.zoom.us/rec/share/YYZegf70CLl_i0uZkDsged9FbRJqU78GOB4iGNCfTjXgQwNuU5e9UTaov6w1BwSt.hjQaGMo8uoG722M5' },
+                    { label: 'Explore Dashboard', url: 'https://mentor.balancenutrition.in/mentor-dashboard' }
+                ]
             },
             {
-                code: 'D1-02',
-                title: 'AMA Session with Founders',
-                content: 'Attend the Ask Me Anything session with the founders',
-                owner: 'Founders'
+                code: 'M4-02',
+                title: 'Lead Management & Tracking',
+                content: 'Learn how to manage the sales funnel directly from your dashboard. Tracking leads from initial enquiry to successful conversion.',
+                outcome: 'Manage a high-volume lead queue without dropping communication.',
+                links: [{ label: 'Lead Management Video', url: 'https://youtu.be/WpaY3G9RGyY' }]
             },
             {
-                code: 'D1-03',
-                title: 'Peer Assessment Submission',
-                content: 'Submit completed peer assessment study',
-                assessment: 'Submit Peer Assessment Sheet'
+                code: 'M4-03',
+                title: 'Creating Payment Links',
+                content: 'Master the process of generating secure payment links for clients based on program selection.',
+                outcome: 'Generate accurate payment links for conversion in under 1 minute.',
+                links: [
+                    { label: 'Payment Links Guide', url: 'https://drive.google.com/file/d/1UkZl0brpE7Z1OYPw5-hB0vtyc_XiNFAD/view' }
+                ]
+            },
+        ]
+    },
+
+    // ===== MODULE 5: Sales Training =====
+    {
+        id: 'module-5',
+        title: 'Module 5: Sales Training',
+        subtitle: 'Foundational Sales & Communication',
+        description: 'Comprehensive sales training covering consultation structures, mock calls, and conversion strategies.',
+        type: 'module',
+        progress: 0,
+        status: 'Available',
+        hasAssignment: false,
+        icon: 'business',
+        topics: [
+            {
+                code: 'M5-01',
+                title: 'Sales Mastery: Phase 1',
+                content: 'Introduction to sales protocols, mock consultations, and foundational structures.',
+                links: [
+                    { label: 'Sales Training Part 1', url: 'https://youtu.be/gYvr-Fdb9z4' },
+                    { label: 'Sales Training Part 2', url: 'https://youtu.be/DlZCZRNHZfc' },
+                    { label: 'Sales Training Part 3', url: 'https://youtu.be/lmRXwJgQOqk' }
+                ]
             },
             {
-                code: 'D1-04',
-                title: 'Health Score Submission',
-                content: 'Submit all Health Score reports taken during training',
-                assessment: 'Submit HS Reports'
+                code: 'M5-02',
+                title: 'Sales Mastery: Phase 2',
+                content: 'Performance reviews, advanced mock calls, and founder-led consultation techniques.',
+                links: [
+                    { label: 'Sales Training Part 4', url: 'https://youtu.be/L9xqZVVkZs8' },
+                    { label: 'Sales Training Part 5', url: 'https://youtu.be/g6OzGs9McRA' },
+                    { label: 'Sales Training Part 6', url: 'https://youtu.be/X2oH36s6w_E' }
+                ]
+            },
+            {
+                code: 'M5-03',
+                title: 'Sales Mastery: Phase 3',
+                content: 'Handling objections, client feedback management, and old client call analysis.',
+                links: [
+                    { label: 'Sales Training Part 7', url: 'https://youtu.be/e_WOl6UuWMg' },
+                    { label: 'Sales Training Part 8', url: 'https://youtu.be/W2FKSOOA600' }
+                ]
+            },
+            {
+                code: 'M5-04',
+                title: 'Sales Mastery: Phase 4',
+                content: 'Final management training summaries and wrap-up sessions.',
+                links: [
+                    { label: 'Sales Training Part 9', url: 'https://youtu.be/c_8Hkg5U3I0' },
+                    { label: 'Sales Training Part 10', url: 'https://youtu.be/eBoIuP-5SUA' }
+                ]
             }
         ]
     },
 
-    // ===== HR CHECKLIST =====
+    // ===== CONTENT BANK / RESOURCE VAULT =====
     {
-        id: 'hr-checklist',
-        title: 'HR Verification Checklist',
-        subtitle: 'For HR Use Only',
-        description: 'HR tasks to verify candidate completion of training modules.',
-        type: 'checklist',
+        id: 'resource-bank',
+        title: 'Clinical Content Bank',
+        subtitle: 'Management Training & Asset Library',
+        description: 'Access the full repository of sales training videos, clinical manuals, and founder protocols.',
+        type: 'resource',
         progress: 0,
         status: 'Available',
         hasAssignment: false,
+        icon: 'folder',
         topics: [
-            { code: 'HR-01', title: 'Summary Mail Check', content: 'Verify candidate has sent summary mail of BN overview study' },
-            { code: 'HR-02', title: 'Peer Assessment Verification', content: 'Check and help candidates implement peer assessment study' },
-            { code: 'HR-03', title: 'Health Score Scenarios', content: 'Ask candidates to take HS with different scenarios' },
-            { code: 'HR-04', title: 'Doubt Clarification', content: 'Clarify any doubts that arose during training' }
-        ]
-    },
-
-    // ===== RESOURCE BANK =====
-    {
-        id: 'resource-bank',
-        title: 'Resource Bank',
-        subtitle: 'Reference Materials',
-        description: 'Archive of training videos and manuals.',
-        type: 'resource',
-        progress: 100,
-        status: 'Available',
-        hasAssignment: false,
-        topics: [
-            { code: 'RB-01', title: 'Sales Training Archive Day 1', content: 'Historical sales methodology - Part 1', links: [{ label: 'Watch Part 1', url: 'https://youtu.be/c_8Hkg5U3I0' }] },
-            { code: 'RB-02', title: 'Sales Training Archive Day 2', content: 'Historical sales methodology - Day 2', links: [{ label: 'Watch', url: 'https://youtu.be/lmRXwJgQOqk' }] },
-            { code: 'RB-03', title: 'Founder Video Series', content: "Khyati Ma'am's Thought Leadership series" },
-            { code: 'RB-04', title: '3T Manual', content: 'Core training methodology document' }
+            {
+                code: 'VB-01',
+                title: 'Sales Training: Day 1 (Part 1)',
+                content: 'Basic mock consultations and introduction to sales protocols.',
+                links: [{ label: 'Watch Video', url: 'https://youtu.be/c_8Hkg5U3I0' }]
+            },
+            {
+                code: 'VB-02',
+                title: 'Sales Training: Day 1 (Part 2)',
+                content: '4.10 to 11.35: Detailed consultation structure walkthrough.',
+                links: [{ label: 'Watch Video', url: 'https://youtu.be/gYvr-Fdb9z4' }]
+            },
+            {
+                code: 'VB-03',
+                title: 'Sales Training: Day 1 (Part 3)',
+                content: 'Mock phone consultation training and follow-up strategies.',
+                links: [{ label: 'Watch Video', url: 'https://youtu.be/DlZCZRNHZfc' }]
+            },
+            {
+                code: 'VB-04',
+                title: 'Sales Training: Day 2',
+                content: 'Advanced mock phone consultation training sessions.',
+                links: [{ label: 'Watch Video', url: 'https://youtu.be/ImRXwJgQOqk' }]
+            },
+            {
+                code: 'VB-05',
+                title: 'Sales Training: Day 3 (Part 1)',
+                content: 'Analysis of old client calls and OC calls observation.',
+                links: [{ label: 'Watch Video', url: 'https://youtu.be/e_WOl6UuWMg' }]
+            },
+            {
+                code: 'VB-06',
+                title: 'Sales Training: Day 3 (Part 2)',
+                content: 'Handling bad feedback or poor results from old clients.',
+                links: [{ label: 'Watch Video', url: 'https://youtu.be/W2FKSOOA6Q0' }]
+            },
+            {
+                code: 'VB-07',
+                title: 'Sales Training: Day 4 (Part 1)',
+                content: 'General mock call sessions for performance review.',
+                links: [{ label: 'Watch Video', url: 'https://youtu.be/eBoIuP-5SUA' }]
+            },
+            {
+                code: 'VB-08',
+                title: 'Sales Training: Day 4 (Part 2)',
+                content: 'Identifying critical "Must to Refer" cases in mock calls.',
+                links: [{ label: 'Watch Video', url: 'https://youtu.be/L9xqZVVkZs8' }]
+            },
+            {
+                code: 'VB-09',
+                title: 'Sales Training: Day 5 (Part 1)',
+                content: '16.08 to 26: Mock consultation session by the Founder.',
+                links: [{ label: 'Watch Video', url: 'https://youtu.be/g6OzGs9McRA' }]
+            },
+            {
+                code: 'VB-10',
+                title: 'Sales Training: Day 5 (Part 2)',
+                content: 'Advanced "Must to Refer" case study and mock analysis.',
+                links: [{ label: 'Watch Video', url: 'https://youtu.be/X2oH36s6w_E' }]
+            },
+            {
+                code: 'VB-11',
+                title: 'Sales Training: Day 5 (Part 3)',
+                content: 'Comprehensive review of Day 5 training modules.',
+                links: [{ label: 'Watch Video', url: 'https://youtu.be/8oKBsxHZ94A' }]
+            },
+            {
+                code: 'VB-12',
+                title: 'Sales Training: Day 6 (Unlisted)',
+                content: 'Final management team training summary and wrap-up.',
+                links: [{ label: 'Watch Video', url: 'https://youtu.be/hM9O_PvTnf4' }]
+            },
+            {
+                code: 'RB-01',
+                title: "Khyati Ma'am's Video",
+                content: 'Core clinical philosophy and founder vision address.',
+                links: [{ label: 'Watch Video', url: '#' }]
+            },
+            {
+                code: 'RB-02',
+                title: '3T Manual',
+                content: 'The Comprehensive Technical Trainer Manual (3T Protocol).',
+                links: [{ label: 'Open Manual', url: '#' }]
+            },
+            {
+                code: 'RB-03',
+                title: 'Facebook Content Library',
+                content: 'Full repository of marketing and engagement assets.',
+                links: [{ label: 'Access Library', url: '#' }]
+            },
+            // Phase 1 Program Videos
+            {
+                code: 'PV-P1-01',
+                title: 'Weight Loss Pro Program',
+                content: 'Phase 1: Advanced weight loss protocols and client management.',
+                links: [{ label: 'Watch Training', url: 'https://www.youtube.com/watch?v=3zx6UDOJW10' }]
+            },
+            {
+                code: 'PV-P1-02',
+                title: 'Weight Loss Plus Program',
+                content: 'Phase 1: Managing complex weight loss cases with comorbidities.',
+                links: [{ label: 'Watch Training', url: 'https://www.youtube.com/watch?v=Pjh66SSPRpg' }]
+            },
+            {
+                code: 'PV-P1-03',
+                title: 'Beat PCOS Program',
+                content: 'Phase 1: Hormonal balance and PCOS management protocols.',
+                links: [{ label: 'Watch Training', url: 'https://youtu.be/LIrccmmw65k' }]
+            },
+            {
+                code: 'PV-P1-04',
+                title: 'Slim Smart30',
+                content: 'Phase 1: 30-day intensive weight loss walkthrough.',
+                links: [{ label: 'Watch Training', url: 'https://youtu.be/4U56FpjvteM' }]
+            },
+            // Phase 2 Program Videos
+            {
+                code: 'PV-P2-01',
+                title: 'Renue Program',
+                content: 'Phase 2: Skin health and anti-aging clinical protocols.',
+                links: [{ label: 'Watch Training', url: 'https://youtu.be/FXBqPTEqEVU' }]
+            },
+            {
+                code: 'PV-P2-02',
+                title: 'Body Transformation Program',
+                content: 'Phase 2: Holistic transformation and lifestyle correction.',
+                links: [{ label: 'Watch Training', url: 'https://www.youtube.com/watch?v=vtLWQ9HI18U' }]
+            },
+            {
+                code: 'PV-P2-03',
+                title: 'Plateau Breaker Program',
+                content: 'Phase 2: Scientific strategies to overcome weight loss plateaus.',
+                links: [{ label: 'Watch Training', url: 'https://www.youtube.com/watch?v=Ex1d94x7b-A' }]
+            },
+            {
+                code: 'PV-P2-04',
+                title: 'Active Weight Loss Program',
+                content: 'Phase 2: Exercise-integrated weight loss management.',
+                links: [{ label: 'Watch Training', url: 'https://www.youtube.com/watch?v=orIp1QRR6u0' }]
+            },
+            {
+                code: 'PV-P2-05',
+                title: 'Reform Intermittent Fasting',
+                content: 'Phase 2: Mastering fasting protocols and client scheduling.',
+                links: [{ label: 'Watch Training', url: 'https://youtu.be/tk3o_PuqASw' }]
+            },
+            {
+                code: 'PV-P2-06',
+                title: 'Slimpossible 60 Program',
+                content: 'Phase 2: Comprehensive 60-day medical weight loss journey.',
+                links: [{ label: 'Watch Training', url: 'https://youtu.be/1098FRtg9ZQ' }]
+            }
         ]
     }
 ];

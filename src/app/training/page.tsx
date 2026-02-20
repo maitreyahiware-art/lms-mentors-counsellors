@@ -29,7 +29,7 @@ export default function TrainingPage() {
             className="p-8 lg:p-12 max-w-7xl mx-auto"
         >
             <header className="mb-16">
-                <h1 className="text-5xl font-serif text-[#0E5858] mb-4">Mentor Training Academy</h1>
+                <h1 className="text-5xl font-serif text-[#0E5858] mb-4">Counselor Training Academy</h1>
                 <p className="text-xl text-gray-500 max-w-2xl">
                     Complete the following modules to master the Balance Nutrition clinical protocols and counselling standards.
                 </p>
@@ -41,37 +41,37 @@ export default function TrainingPage() {
                         key={module.id}
                         variants={itemVariants}
                         onClick={() => router.push(`/modules/${module.id}`)}
-                        className="premium-card p-8 group cursor-pointer hover:border-[#00B6C1]/30 transition-all"
+                        className="premium-card p-6 group cursor-pointer hover:border-[#00B6C1]/30 transition-all"
                     >
-                        <div className="flex flex-col md:flex-row items-center gap-8">
-                            <div className="w-20 h-20 bg-[#FAFCEE] rounded-3xl flex items-center justify-center text-[#00B6C1] group-hover:bg-[#00B6C1] group-hover:text-white transition-all">
-                                <BookOpen size={32} />
+                        <div className="flex flex-col md:flex-row items-center gap-6">
+                            <div className="w-16 h-16 bg-[#FAFCEE] rounded-2xl flex items-center justify-center text-[#00B6C1] group-hover:bg-[#00B6C1] group-hover:text-white transition-all">
+                                <BookOpen size={24} />
                             </div>
 
                             <div className="flex-1 text-center md:text-left">
-                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
+                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-1.5">
                                     <span className="badge-teal">{module.type}</span>
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{module.topics.length} Topics</span>
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{module.topics.length} Topics</span>
                                 </div>
-                                <h2 className="text-3xl font-serif text-[#0E5858] mb-2">{module.title}</h2>
-                                <p className="text-gray-500 font-medium">{module.subtitle || module.description}</p>
+                                <h2 className="text-2xl font-serif text-[#0E5858] mb-1">{module.title}</h2>
+                                <p className="text-sm text-gray-500 font-medium">{module.subtitle || module.description}</p>
                             </div>
 
-                            <div className="flex flex-col items-center md:items-end gap-4 min-w-[200px]">
-                                <div className="w-full h-2 bg-gray-50 rounded-full overflow-hidden">
+                            <div className="flex flex-col items-center md:items-end gap-3 min-w-[180px]">
+                                <div className="w-full h-1.5 bg-gray-50 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-gradient-to-r from-[#0E5858] to-[#00B6C1]"
                                         style={{ width: `${module.progress}%` }}
                                     />
                                 </div>
-                                <div className="flex items-center gap-6">
-                                    <div className="flex items-center gap-2 text-gray-400 text-sm font-bold">
-                                        <Clock size={16} />
+                                <div className="flex items-center gap-5">
+                                    <div className="flex items-center gap-2 text-gray-300 text-[11px] font-bold">
+                                        <Clock size={14} />
                                         <span>{module.topics.length * 30} mins</span>
                                     </div>
-                                    <button className="flex items-center gap-2 text-[#00B6C1] font-bold group-hover:translate-x-2 transition-all">
+                                    <button className="flex items-center gap-2 text-[#00B6C1] text-sm font-bold group-hover:translate-x-1 transition-all">
                                         <span>{module.progress === 100 ? 'Review' : 'Continue'}</span>
-                                        <ArrowRight size={18} />
+                                        <ArrowRight size={16} />
                                     </button>
                                 </div>
                             </div>

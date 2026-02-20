@@ -36,9 +36,9 @@ export default function ProgramInfoPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
                 {[
-                    { title: 'Our Mission', text: 'To empower mentors with scientific precision and compassionate counselling skills.', icon: Target },
+                    { title: 'Our Mission', text: 'To empower counselors with scientific precision and compassionate counselling skills.', icon: Target },
                     { title: 'Quality Framework', text: 'Every consultation follows the 32-point global nutrition standard verified by BN.', icon: ShieldCheck },
-                    { title: 'Mentorship Growth', text: 'A pathway designed to take you from specialized trainee to Senior Clinical Lead.', icon: Award },
+                    { title: 'Counsellor Growth', text: 'A pathway designed to take you from specialized trainee to Senior Clinical Lead.', icon: Award },
                 ].map((item, i) => (
                     <motion.div key={i} variants={itemVariants} className="premium-card p-10 group">
                         <div className="w-16 h-16 bg-[#0E5858] text-[#00B6C1] rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl group-hover:rotate-6 transition-all">
@@ -59,7 +59,7 @@ export default function ProgramInfoPage() {
                             <div className="flex gap-6">
                                 <div className="shrink-0 w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-[#00B6C1]"><Users size={24} /></div>
                                 <div>
-                                    <h4 className="font-bold text-xl mb-2">Mentor Community</h4>
+                                    <h4 className="font-bold text-xl mb-2">Counselor Community</h4>
                                     <p className="text-white/60 font-medium">Join 200+ elite dieticians sharing clinical insights daily.</p>
                                 </div>
                             </div>
