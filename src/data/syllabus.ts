@@ -26,7 +26,8 @@ export interface Topic {
     assignmentQuestions?: string[];
     caseStudyLinks?: string[];
     persona?: { story: string; goal: string };
-    links?: { label: string; url: string }[];
+    links?: { label: string; url: string; subtitle?: string; icon?: string }[];
+    layout?: 'default' | 'grid';
 }
 
 export interface Module {
@@ -58,24 +59,29 @@ export const syllabusData: Module[] = [
             {
                 code: 'M1-01',
                 title: 'Website Deep Dive',
-                content: 'Study the core platform to understand the client interface:<br/><br/>• <strong>Main Website</strong>: Explore <a href="https://www.balancenutrition.in/" target="_blank" class="text-blue-600 hover:underline">balancenutrition.in</a><br/>• <strong>Recipes</strong>: Review the <a href="https://www.balancenutrition.in/recipes" target="_blank" class="text-blue-600 hover:underline">Recipes Section</a><br/>• <strong>Health Reads</strong>: Read key articles on <a href="https://www.balancenutrition.in/blog/health-reads#" target="_blank" class="text-blue-600 hover:underline">Health Blogs</a>',
+                content: 'Study the core platform to understand the client interface.',
+                layout: 'grid',
                 links: [
-                    { label: 'Main Website', url: 'https://www.balancenutrition.in/' },
-                    { label: 'Recipes', url: 'https://www.balancenutrition.in/recipes' },
-                    { label: 'Health Blogs', url: 'https://www.balancenutrition.in/blog/health-reads#' },
-                    { label: 'App Workflow Doc', url: 'https://docs.google.com/document/d/13ueBq-I6O53PrHbPIkifPPZ7tE1HZ9Bl-iTExkhM2Fk/edit?tab=t.0' }
+                    { label: 'BN Website', subtitle: 'E-Commerce & Product Inventory', url: 'https://www.balancenutrition.in/' },
+                    { label: 'BN Recipes', subtitle: 'Entrepreneurial Learning Platform', icon: 'target', url: 'https://www.balancenutrition.in/recipes' },
+                    { label: 'BN Health Reads', subtitle: 'Life Centre & Franchise Operations', icon: 'globe', url: 'https://www.balancenutrition.in/health-reads' },
+                    { label: 'BN App', subtitle: 'Clinical OS & Patient Management', icon: 'activity', url: 'https://docs.google.com/document/d/13ueBq-I6O53PrHbPIkifPPZ7tE1HZ9Bl-iTExkhM2Fk/edit?tab=t.0' }
                 ]
             },
             {
                 code: 'M1-02',
-                title: 'Brand Vision & Mission',
+                title: 'Meet Our Founder',
                 content: 'Review the brochures and understand the core vision of Balance Nutrition. Understand what we stand for and our promise to clients.',
-                links: [{ label: 'Brand Brochure', url: 'https://youtu.be/qtjKDiRAaXw' }]
+                links: [
+                    { label: 'Meet Khyati', url: 'https://balancenutrition.in/meet-khyati' },
+                    { label: 'Khyati Journey', url: 'https://yourstory.com/2017/12/youngest-chief-nutritionist-india-helping-10000-people-battle-weight-issues-email-meet-khyati-rupani' },
+                    { label: 'Youtube series', url: 'https://www.youtube.com/watch?v=v8eD_P6E7D0&list=PLiNqWVAAuQ1FwiQKRMtGCMXy1kIYdjlig' }
+                ]
             },
             {
                 code: 'M1-03',
                 title: 'Social Media Assessment',
-                content: 'Study all official channels. <strong>Action:</strong> Review links and note down key takeaways and feedback.<br/><br/>• <strong>Instagram</strong>: Khyati Rupani Official<br/>• <strong>LinkedIn</strong>: BN Corporate & Founder Profiles<br/>• <strong>YouTube</strong>: Wellness & Brand Channel',
+                content: 'Study all official channels. <strong>Action:</strong> Review links and note down key takeaways and feedback.<br/><br/> ',
                 links: [
                     { label: 'Instagram BN', url: 'https://instagram.com/balancenutrition.in?igshid=YmMyMTA2M2Y=' },
                     { label: 'Instagram Khyati', url: 'https://instagram.com/nutritionist_khyatirupani?igshid=YmMyMTA2M2Y=' },
@@ -84,7 +90,9 @@ export const syllabusData: Module[] = [
                     { label: 'LinkedIn Vishal', url: 'https://www.linkedin.com/in/vishal-rupani-501a3b4' },
                     { label: 'YouTube', url: 'https://youtube.com/c/BalanceNutrition' }
                 ]
-            }
+            },
+
+
         ]
     },
 
@@ -108,27 +116,39 @@ export const syllabusData: Module[] = [
             },
             {
                 code: 'M2-02',
-                title: 'Product Training (Kits)',
-                content: 'Deep dive into the specific kits and lifestyle guides provided to clients.',
+                title: 'Awards and Recognition',
+                content: 'Explore the international accolades, media features, and brand milestones of Balance Nutrition.',
                 links: [
-                    { label: 'Eating Portions PDF', url: 'https://balancenutrition.in/media/ekits/eat_in_portions.pdf' },
-                    { label: 'Alcohol Guide PDF', url: 'https://balancenutrition.in/media/ekits/alcohol_guide.pdf' },
-                    { label: 'E-Kits Ecosystem', url: 'https://www.youtube.com/watch?v=lCbJs_FYueQ&t=444s' },
-                    { label: 'Restaurant Guide PDF', url: 'https://balancenutrition.in/media/ekits/restaurant_menu.pdf' }
+                    { label: 'BN Vision & Recognition', url: 'https://www.youtube.com/watch?v=qtjKDiRAaXw' },
+                    { label: "Vishal Sir's BTVI Interview", url: 'https://www.youtube.com/watch?v=slBpy4wPX5g&t=8s' },
+                    { label: 'Brand Recognition Gallery', url: 'https://www.balancenutrition.in/media-gallery' },
+                    { label: 'Award by Times Now', url: 'https://www.youtube.com/watch?v=VPrT-yRt9v8#action=share' }
                 ]
             },
+
             {
                 code: 'M2-03',
                 title: 'Program Training',
                 content: 'Overview of all BN medical and lifestyle programs. Study the program structures and clinical inclusions.',
                 links: [
+                    { label: 'Program Training Recording', url: 'https://us06web.zoom.us/rec/play/LEleYRJJTdk9jVOq1fdRn_-bSxcuczslgg-O4I2BlSLSIJaod7wq2lOYjygnCtzVxS__bNi_HZFMhF-G.ciquqYqkwaewWofq?eagerLoadZvaPages=sidemenu.billing.plan_management&accessLevel=meeting&canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fus06web.zoom.us%2Frec%2Fshare%2F2eBla490EonzMCtdEFEACKWff_wcSIm7L-Xea2Tjs6YKJtCyCO61C1D7HkOhCEMi.91w22q29HVh6aMvb' },
                     { label: 'BN Programs Guide', url: 'https://drive.google.com/file/d/18SQMmnz4riJ17d--GWEvVuvaLQ9iuzKy/view?usp=sharing' },
-                    { label: 'Phase 1 Programs', url: '/content-bank?search=Phase 1' },
-                    { label: 'Phase 2 Programs', url: '/content-bank?search=Phase 2' }
+                    { label: 'All Programs', url: 'https://docs.google.com/document/d/1QAmIPw-wfDOOioYe8pA5-aX-jvookekLTsbvHEjCEb4/edit?usp=sharing' }
                 ]
             },
             {
                 code: 'M2-04',
+                title: 'Product Training (Kits)',
+                content: 'Deep dive into the specific kits and lifestyle guides provided to clients.',
+                links: [
+                    { label: 'E-Kits Ecosystem', url: 'https://www.youtube.com/watch?v=lCbJs_FYueQ&t=444s' },
+                    { label: 'Eating Portions PDF', url: 'https://balancenutrition.in/media/ekits/eat_in_portions.pdf' },
+                    { label: 'Alcohol Guide PDF', url: 'https://balancenutrition.in/media/ekits/alcohol_guide.pdf' },
+                    { label: 'Restaurant Guide PDF', url: 'https://balancenutrition.in/media/ekits/restaurant_menu.pdf' }
+                ]
+            },
+            {
+                code: 'M2-05',
                 title: 'Peer Review',
                 content: 'Conduct a clinical and commercial audit of Balance Nutrition versus market peers.<br/><br/><strong>Objective:</strong> To understand how Balance Nutrition stands against key market competitors in terms of clinical approach, sales pitching, and digital presence.<br/><br/><strong>Instructions:</strong><br/>1. Create Your persona: Using the example below, define your own age, weight and goal for this audit.<br/>2. Select 2 Peer Companies & 2 Peer Dieticians to audit alongside <strong>Balance Nutrition</strong> and <strong>Khyati Rupani</strong>.<br/>3. Conduct the research and fill the audit columns.',
                 isAssignment: true,
@@ -165,10 +185,68 @@ export const syllabusData: Module[] = [
         ]
     },
 
-    // ===== MODULE 3: Consultation Training =====
+    // ===== MODULE 3: Sales skill training (Repositioned from M5) =====
     {
         id: 'module-3',
-        title: 'Module 3: Consultation Training',
+        title: 'Module 3: Sales skill training',
+        subtitle: 'Foundational Sales & Communication',
+        description: 'Comprehensive sales training covering consultation structures, mock calls, and conversion strategies.',
+        type: 'module',
+        progress: 0,
+        status: 'Available',
+        hasAssignment: false,
+        icon: 'business',
+        topics: [
+            {
+                code: 'M3-01',
+                title: 'Sales Mastery: Phase 1',
+                content: 'Introduction to sales protocols, mock consultations, and foundational structures.',
+                links: [
+                    { label: 'Sales Training Part 1', url: 'https://youtu.be/gYvr-Fdb9z4' },
+                    { label: 'Sales Training Part 2', url: 'https://youtu.be/DlZCZRNHZfc' },
+                    { label: 'Sales Training Part 3', url: 'https://youtu.be/lmRXwJgQOqk' }
+                ]
+            },
+            {
+                code: 'M3-02',
+                title: 'Sales Mastery: Phase 2',
+                content: 'Performance reviews, advanced mock calls, and founder-led consultation techniques.',
+                links: [
+                    { label: 'Sales Training Part 4', url: 'https://youtu.be/L9xqZVVkZs8' },
+                    { label: 'Sales Training Part 5', url: 'https://youtu.be/g6OzGs9McRA' },
+                    { label: 'Sales Training Part 6', url: 'https://youtu.be/X2oH36s6w_E' }
+                ]
+            },
+            {
+                code: 'M3-03',
+                title: 'Sales Mastery: Phase 3',
+                content: 'Handling objections, client feedback management, and old client call analysis.',
+                links: [
+                    { label: 'Sales Training Part 7', url: 'https://youtu.be/e_WOl6UuWMg' },
+                    { label: 'Sales Training Part 8', url: 'https://youtu.be/W2FKSOOA600' }
+                ]
+            },
+            {
+                code: 'M3-04',
+                title: 'Training Resource',
+                content: 'Final management training summaries and wrap-up sessions.',
+                links: [
+                    { label: 'CIS sales workbook_1', url: 'https://docs.google.com/document/d/1OgHV7RzQNBrTXFWiIWhPyMKAQLSAIOy6/edit' },
+                    { label: 'CIS sales workbook_2', url: 'https://docs.google.com/document/d/1rbAm8SwXj4SJ_0urlSmBQ4ss4md00SN3/edit' },
+                    { label: 'CIS sales workbook_3', url: 'https://docs.google.com/document/d/1lo_Hx07qjO1YBxfYJCVhzLad8J4jqHgK/edit' },
+                    { label: 'Engagement Manual', url: 'https://docs.google.com/document/d/1BGs732y6H04XHySp7r3ivu8n4fkF-MjMHJv_wYvbhA8/edit?tab=t.0#heading=h.lhggr0z4ly8' },
+                    { label: 'Wallet Money Doc', url: 'https://docs.google.com/spreadsheets/d/1X9T8TJw9UX7AtdNiZrRUA_pvQYRM8AMd5Fu1kuozISo/edit?gid=0#gid=0' },
+                    { label: 'WhatsApp Dos and Donts', url: 'https://drive.google.com/file/d/1fFUtJPGTBb_cLVGizvC4EwtKNOh23vDG/view' },
+                    { label: 'Lead Conversion (Consultation) Training by Krishna', url: 'https://us06web.zoom.us/rec/play/tH49jQn_4nKfmAaHkjtYZD1BbE7XhVjxiMBK4qsp3PG_HHiPT24Q6Gbkmv9l1duLFczNqgJHrST8I0t-.hFkYNmkz4w3CAw5V?eagerLoadZvaPages=sidemenu.billing.plan_management&accessLevel=meeting&canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fus06web.zoom.us%2Frec%2Fshare%2FFGUqZ4uRA8jnB-HXnKYReWXxUrCrpYB64UlBhHzjjVOfCpYilXKpJnSFoL8Q2yh1.rn_6BNdfPwOc10XD' },
+                ]
+            },
+        ]
+    },
+
+    // ===== MODULE 4: Consultation Training (Shifted from M3) =====
+    {
+        id: 'module-4',
+        title: 'Module 4: Consultation Training',
         subtitle: 'Client Engagement & Clinical Mastery',
         description: 'Learning to pitch programs, engage clients day-to-day, and analyze clinical health journeys.',
         type: 'module',
@@ -178,24 +256,17 @@ export const syllabusData: Module[] = [
         icon: 'health',
         topics: [
             {
-                code: 'M3-01',
-                title: 'Consultation Calls',
+                code: 'M4-01',
+                title: 'Consultation Calls by Mentors',
                 content: 'Observe live calls by senior mentors and understand call etiquette.',
                 links: [
+                    { label: 'Khyati Consultation Call', url: 'https://drive.google.com/drive/u/0/folders/1no3Bzra5O3CqdDQqhOUuetrNhbAcsXNc' },
                     { label: 'Live Calls Drive', url: 'https://drive.google.com/drive/folders/1gGNjm008rEY6MoiF8hZze5t1LMkK6LpU' }
                 ]
             },
+
             {
-                code: 'M3-02',
-                title: 'Call Recordings',
-                content: 'Review successful consultation recordings and Khyati Ma\'am\'s direct client interactions.',
-                links: [
-                    { label: 'Consultation Recording 1', url: 'https://drive.google.com/file/d/1Wlaj1zJ7BWVcugHtid_Qal23RytKPiPF/view?usp=sharing' },
-                    { label: 'Khyati Consultation Call', url: 'https://drive.google.com/drive/u/0/folders/1no3Bzra5O3CqdDQqhOUuetrNhbAcsXNc' }
-                ]
-            },
-            {
-                code: 'M3-03',
+                code: 'M4-02',
                 title: 'Case Studies',
                 content: 'Analyze specific client cases and their health journeys.',
                 links: [
@@ -219,17 +290,10 @@ export const syllabusData: Module[] = [
                     "https://docs.google.com/presentation/d/1Ph-pJDQxQiNgb0-K3uqrrw23ZgjIj3Cr/"
                 ]
             },
+
             {
-                code: 'M3-04',
-                title: 'Program Pitching',
-                content: 'Learn how to pitch relevant programs to potential clients with the right clinical approach.',
-                links: [
-                    { label: 'Program Pitching Guide', url: 'https://drive.google.com/file/d/1nnF007TpMjsPELUtlZ6D5tQYk-QjHpkq/view?usp=sharing' }
-                ]
-            },
-            {
-                code: 'M3-05',
-                title: 'Day-to-Day Engagement',
+                code: 'M4-03',
+                title: 'Day-to-Day Lead Engagement',
                 content: 'Strategies for daily client engagement, motivation, and milestone tracking.',
                 links: [
                     { label: 'Engagement Guide', url: 'https://drive.google.com/file/d/1mrrNxIUOXRKXPVYZsDYvf64fp-8gbOS2/view?usp=sharing' }
@@ -238,10 +302,10 @@ export const syllabusData: Module[] = [
         ]
     },
 
-    // ===== MODULE 4: Dashboard Training =====
+    // ===== MODULE 5: Dashboard Training (Shifted from M4) =====
     {
-        id: 'module-4',
-        title: 'Module 4: Dashboard Training',
+        id: 'module-5',
+        title: 'Module 5: Dashboard Training',
         subtitle: 'Mastering the Counselor Operating System',
         description: 'Guided walkthrough of the counselor dashboard, lead tracking, and the prescription writing engine.',
         type: 'module',
@@ -251,7 +315,7 @@ export const syllabusData: Module[] = [
         icon: 'layers',
         topics: [
             {
-                code: 'M4-01',
+                code: 'M5-01',
                 title: 'Dashboard Ecosystem Overview',
                 content: 'Experience the primary dashboard interface. Learn to navigate between active clients, pending assessments, and lead queues.',
                 outcome: 'Navigate the counselor ecosystem with 100% efficiency.',
@@ -261,14 +325,14 @@ export const syllabusData: Module[] = [
                 ]
             },
             {
-                code: 'M4-02',
+                code: 'M5-02',
                 title: 'Lead Management & Tracking',
                 content: 'Learn how to manage the sales funnel directly from your dashboard. Tracking leads from initial enquiry to successful conversion.',
                 outcome: 'Manage a high-volume lead queue without dropping communication.',
                 links: [{ label: 'Lead Management Video', url: 'https://youtu.be/WpaY3G9RGyY' }]
             },
             {
-                code: 'M4-03',
+                code: 'M5-03',
                 title: 'Creating Payment Links',
                 content: 'Master the process of generating secure payment links for clients based on program selection.',
                 outcome: 'Generate accurate payment links for conversion in under 1 minute.',
@@ -276,59 +340,6 @@ export const syllabusData: Module[] = [
                     { label: 'Payment Links Guide', url: 'https://drive.google.com/file/d/1UkZl0brpE7Z1OYPw5-hB0vtyc_XiNFAD/view' }
                 ]
             },
-        ]
-    },
-
-    // ===== MODULE 5: Sales Training =====
-    {
-        id: 'module-5',
-        title: 'Module 5: Sales Training',
-        subtitle: 'Foundational Sales & Communication',
-        description: 'Comprehensive sales training covering consultation structures, mock calls, and conversion strategies.',
-        type: 'module',
-        progress: 0,
-        status: 'Available',
-        hasAssignment: false,
-        icon: 'business',
-        topics: [
-            {
-                code: 'M5-01',
-                title: 'Sales Mastery: Phase 1',
-                content: 'Introduction to sales protocols, mock consultations, and foundational structures.',
-                links: [
-                    { label: 'Sales Training Part 1', url: 'https://youtu.be/gYvr-Fdb9z4' },
-                    { label: 'Sales Training Part 2', url: 'https://youtu.be/DlZCZRNHZfc' },
-                    { label: 'Sales Training Part 3', url: 'https://youtu.be/lmRXwJgQOqk' }
-                ]
-            },
-            {
-                code: 'M5-02',
-                title: 'Sales Mastery: Phase 2',
-                content: 'Performance reviews, advanced mock calls, and founder-led consultation techniques.',
-                links: [
-                    { label: 'Sales Training Part 4', url: 'https://youtu.be/L9xqZVVkZs8' },
-                    { label: 'Sales Training Part 5', url: 'https://youtu.be/g6OzGs9McRA' },
-                    { label: 'Sales Training Part 6', url: 'https://youtu.be/X2oH36s6w_E' }
-                ]
-            },
-            {
-                code: 'M5-03',
-                title: 'Sales Mastery: Phase 3',
-                content: 'Handling objections, client feedback management, and old client call analysis.',
-                links: [
-                    { label: 'Sales Training Part 7', url: 'https://youtu.be/e_WOl6UuWMg' },
-                    { label: 'Sales Training Part 8', url: 'https://youtu.be/W2FKSOOA600' }
-                ]
-            },
-            {
-                code: 'M5-04',
-                title: 'Sales Mastery: Phase 4',
-                content: 'Final management training summaries and wrap-up sessions.',
-                links: [
-                    { label: 'Sales Training Part 9', url: 'https://youtu.be/c_8Hkg5U3I0' },
-                    { label: 'Sales Training Part 10', url: 'https://youtu.be/eBoIuP-5SUA' }
-                ]
-            }
         ]
     },
 

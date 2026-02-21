@@ -20,7 +20,9 @@ import {
     ShoppingBag,
     Globe,
     Activity,
-    Target
+    Target,
+    CheckCircle2,
+    Award
 } from "lucide-react";
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -120,11 +122,11 @@ export default function ModulePage() {
         } else {
             const { error } = await supabase
                 .from('mentor_progress')
-                .insert([{
+                .upsert([{
                     user_id: session.user.id,
                     topic_code: topicCode,
                     module_id: moduleId
-                }]);
+                }], { onConflict: 'user_id,topic_code' });
 
             if (!error) {
                 setCompletedTopics([...completedTopics, topicCode]);
@@ -145,7 +147,7 @@ export default function ModulePage() {
     const handleContinue = () => {
         // Special logic for Module 2: Block until Peer Review (M2-04) is done
         if (moduleId === 'module-2') {
-            const hasPeerReview = completedTopics.includes('M2-04');
+            const hasPeerReview = completedTopics.includes('M2-05');
             if (!hasPeerReview) {
                 alert("Please submit your Peer Review report before proceeding to the Final Audit.");
                 return;
@@ -156,8 +158,8 @@ export default function ModulePage() {
         const allTopicsDone = module?.topics.every(t => completedTopics.includes(t.code));
 
         if (allTopicsDone) {
-            // Requirement for Module 3: Must do clinical simulation first
-            if (moduleId === 'module-3' && !simulationDone) {
+            // Requirement for Module 4 (Consultation): Must do clinical simulation first
+            if (moduleId === 'module-4' && !simulationDone) {
                 setShowSimulation(true);
                 return;
             }
@@ -473,6 +475,72 @@ export default function ModulePage() {
                 )}
             </div>
 
+            {/* Module Assessment Gating Card */}
+            {module.topics.length > 0 && completedTopics.length === module.topics.length && (
+                <motion.section
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className={`mt-12 p-8 lg:p-12 rounded-[3.5rem] border-2 transition-all duration-1000 relative overflow-hidden group ${assessmentPassed
+                        ? 'bg-[#FAFCEE] border-[#0E5858]/10'
+                        : 'bg-[#0E5858] border-[#0E5858] shadow-3xl shadow-[#0E5858]/30'
+                        }`}
+                >
+                    {/* Decorative Background */}
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -mr-48 -mt-48"></div>
+
+                    <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
+                        <div className="flex-1">
+                            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6 ${assessmentPassed ? 'bg-green-100 text-green-700' : 'bg-[#00B6C1]/20 text-[#00B6C1]'
+                                }`}>
+                                {assessmentPassed ? <CheckCircle2 size={12} /> : <Brain size={12} />}
+                                {assessmentPassed ? 'Assessment Mastered' : 'Achievement Unlocked'}
+                            </div>
+
+                            <h2 className={`text-4xl lg:text-5xl font-serif mb-4 leading-tight ${assessmentPassed ? 'text-[#0E5858]' : 'text-white'}`}>
+                                {assessmentPassed
+                                    ? <span>Clinical Proficiency <br /><span className="text-[#00B6C1]">Verified</span></span>
+                                    : <span>Final Module <br /><span className="text-[#00B6C1]">Assessment</span></span>
+                                }
+                            </h2>
+
+                            <p className={`text-lg font-medium max-w-xl ${assessmentPassed ? 'text-gray-500' : 'text-white/60 text-base'}`}>
+                                {assessmentPassed
+                                    ? "Your understanding of this clinical block has been verified. You are now officially cleared to proceed to the next module."
+                                    : "You've successfully covered all sections! Now, demonstrate your clinical mastery by taking the final module quiz."
+                                }
+                            </p>
+                        </div>
+
+                        <div className="shrink-0">
+                            {assessmentPassed ? (
+                                <div className="flex flex-col items-center gap-4">
+                                    <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center text-white shadow-2xl relative">
+                                        <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-20"></div>
+                                        <Award size={40} />
+                                    </div>
+                                    <span className="text-xs font-black text-green-600 uppercase tracking-widest">Score Captured</span>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => {
+                                        if (moduleId === 'module-2') setShowVivaIntro(true);
+                                        else if (moduleId === 'module-4' && !simulationDone) setShowSimulation(true);
+                                        else setShowModuleAssessment(true);
+                                    }}
+                                    className="px-12 py-6 bg-[#00B6C1] text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] shadow-2xl hover:bg-white hover:text-[#0E5858] transition-all hover:-translate-y-2 group"
+                                >
+                                    <span className="flex items-center gap-4">
+                                        Initialize Audit
+                                        <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform" />
+                                    </span>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </motion.section>
+            )}
+
             {/* BN Ecosystem Hub (Only for Module 1) */}
             {moduleId === 'module-1' && (
                 <section className="mt-24 mb-10">
@@ -551,7 +619,7 @@ export default function ModulePage() {
                         {[
                             {
                                 title: "Corporate Wellness",
-                                url: "#",
+                                url: "https://drive.google.com/file/d/1YC6Yoz4NSgTsMr65hkc4fHtKApPI3xgM/view?usp=drive_link",
                                 desc: "Corporate Health Brochure",
                                 icon: Building2,
                                 color: "#0E5858"
@@ -565,7 +633,7 @@ export default function ModulePage() {
                             },
                             {
                                 title: "Doctors",
-                                url: "https://drive.google.com/file/d/1WT5THSzQyvsJHE7aA3QExPrE0qpUVv2T/view?usp=drive_link",
+                                url: "https://drive.google.com/drive/folders/1GN7nDd6QmuiO2rmMB1uiQUvYeqIZPuGK?usp=sharing",
                                 desc: "Doctor Network Brochure",
                                 icon: Stethoscope,
                                 color: "#FF5733"
@@ -579,7 +647,7 @@ export default function ModulePage() {
                             },
                             {
                                 title: "Institutional",
-                                url: "https://drive.google.com/file/d/1kJtC2VsfclkJVAg_RDc8ge-vqAALcPgR/view?usp=drive_link",
+                                url: "https://drive.google.com/drive/folders/18NQXel0C-rHSOX9TdTo20liyE67jjz-5?usp=sharing",
                                 desc: "Institutional Partnerships",
                                 icon: School,
                                 color: "#FF7675"
@@ -627,7 +695,10 @@ export default function ModulePage() {
 
                 <button
                     onClick={handleContinue}
-                    className="px-10 py-5 bg-[#0E5858] text-white rounded-[2rem] font-bold shadow-3xl hover:bg-[#00B6C1] hover:shadow-[#00B6C1]/40 hover:translate-y-[-5px] transition-all duration-500 flex items-center gap-4"
+                    className={`px-10 py-5 rounded-[2rem] font-bold shadow-3xl flex items-center gap-4 transition-all duration-500 ${(module?.topics.every(t => completedTopics.includes(t.code)) && assessmentPassed)
+                        ? 'bg-[#0E5858] text-white hover:bg-[#00B6C1] hover:shadow-[#00B6C1]/40 hover:translate-y-[-5px]'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200 shadow-none'
+                        }`}
                 >
                     {nextModule ? 'Next Module' : 'Return to Hub'}
                     <ChevronRight size={20} />

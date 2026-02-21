@@ -19,7 +19,15 @@ import {
     FileText,
     Maximize2,
     ArrowUpRight,
-    BrainCircuit
+    BrainCircuit,
+    ShoppingBag,
+    Globe,
+    Building2,
+    Dumbbell,
+    Stethoscope,
+    FlaskConical,
+    School,
+    HeartPulse
 } from "lucide-react";
 import YouTubePlayer from "./YouTubePlayer";
 import ClinicalSimulator from "./ClinicalSimulator";
@@ -55,6 +63,11 @@ function getEmbedUrl(url: string | undefined): string | null {
         }
     }
 
+    // Zoom
+    if (url.includes('zoom.us')) {
+        return url;
+    }
+
     return null;
 }
 
@@ -78,12 +91,14 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
     const [simulationCompleted, setSimulationCompleted] = useState(false);
     const [assignmentCompleted, setAssignmentCompleted] = useState(false);
     const [selectedCaseStudy, setSelectedCaseStudy] = useState<string | null>(null);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     // Find main video/media link
     const mediaLink = topic.links?.find(l =>
         l.url.includes('youtube') ||
         l.url.includes('youtu.be') ||
-        l.url.includes('drive.google.com')
+        l.url.includes('drive.google.com') ||
+        l.url.includes('zoom.us')
     );
     const embedUrl = getEmbedUrl(mediaLink?.url);
 
@@ -121,7 +136,6 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
 
     const isReadyToComplete =
         (topic.isAssignment ? assignmentCompleted : true) &&
-        (embedUrl ? videoCompleted : true) &&
         (topic.hasLive ? simulationCompleted : true);
 
     return (
@@ -202,33 +216,80 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                             )}
 
                             {topic.links && topic.links.length > 0 && !topic.caseStudyLinks && (
-                                <div className="space-y-4 flex-1 min-w-[300px]">
-                                    <div className="flex items-center justify-between mb-1 px-1">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-[#00B6C1]"></div>
-                                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">{topic.isAssignment ? 'Peer Audit Resource Links' : 'Reference Materials'}</p>
+                                <div className="space-y-6 flex-1 min-w-[300px]">
+                                    <div className="flex items-center justify-between mb-4 px-1">
+                                        <div className="flex items-center gap-4">
+                                            {topic.layout === 'grid' && <div className="w-1.5 h-10 bg-[#FFCC00] rounded-full"></div>}
+                                            <div>
+                                                <h4 className={`${topic.layout === 'grid' ? 'text-2xl' : 'text-lg'} font-serif text-[#0E5858]`}>
+                                                    {topic.layout === 'grid' ? topic.title : (topic.isAssignment ? 'Performance Audit' : 'Reference Materials')}
+                                                </h4>
+                                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mt-1">
+                                                    {topic.layout === 'grid' ? 'Explore Cross-Platform Resources' : (topic.isAssignment ? 'Peer Audit Resource Links' : 'Essential Learning Material')}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                        {topic.links.map(link => (
-                                            <a
-                                                key={link.label}
-                                                href={link.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                onClick={() => logActivity('view_content', { topicCode: topic.code, contentTitle: link.label })}
-                                                className="group/link flex items-center justify-between px-4 py-3 bg-white text-[#0E5858] shadow-sm hover:shadow-xl rounded-2xl text-[11px] font-bold border border-[#0E5858]/5 hover:border-[#00B6C1]/20 transition-all"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-[#FAFCEE] rounded-lg text-[#00B6C1] group-hover/link:bg-[#00B6C1] group-hover/link:text-white transition-colors">
-                                                        <Share2 size={12} />
+
+                                    {topic.layout === 'grid' ? (
+                                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                                            {topic.links.map(link => (
+                                                <motion.a
+                                                    key={link.label}
+                                                    href={link.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    whileHover={{ y: -8, scale: 1.02 }}
+                                                    onClick={() => logActivity('view_content', { topicCode: topic.code, contentTitle: link.label })}
+                                                    className="group/grid-card flex flex-col items-center text-center p-6 bg-white rounded-[2rem] shadow-sm hover:shadow-2xl transition-all border border-[#0E5858]/5 hover:border-[#00B6C1]/20 relative overflow-hidden aspect-[4/5] justify-center"
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-b from-[#FAFCEE]/30 to-transparent opacity-0 group-hover/grid-card:opacity-100 transition-opacity"></div>
+
+                                                    <div className="w-16 h-16 rounded-full bg-[#FAFCEE] flex items-center justify-center text-[#00B6C1] mb-6 group-hover/grid-card:bg-[#00B6C1] group-hover/grid-card:text-white transition-all shadow-inner">
+                                                        {link.icon === 'shop' && <ShoppingBag size={28} />}
+                                                        {link.icon === 'target' && <Target size={28} />}
+                                                        {link.icon === 'globe' && <Globe size={28} />}
+                                                        {link.icon === 'activity' && <Activity size={28} />}
+                                                        {link.icon === 'building' && <Building2 size={28} />}
+                                                        {link.icon === 'dumbbell' && <Dumbbell size={28} />}
+                                                        {link.icon === 'medical' && <Stethoscope size={28} />}
+                                                        {link.icon === 'flask' && <FlaskConical size={28} />}
+                                                        {link.icon === 'school' && <School size={28} />}
+                                                        {!link.icon && <FileText size={28} />}
                                                     </div>
-                                                    {link.label}
-                                                </div>
-                                                <ArrowUpRight size={14} className="opacity-0 group-hover/link:opacity-100 transition-opacity text-[#00B6C1]" />
-                                            </a>
-                                        ))}
-                                    </div>
+
+                                                    <h5 className="text-sm font-serif text-[#0E5858] mb-1 group-hover/grid-card:text-[#00B6C1] transition-colors">{link.label}</h5>
+                                                    <p className="text-[9px] font-medium text-gray-400 mb-4">{link.subtitle || 'Direct Resource Link'}</p>
+
+                                                    <div className="mt-auto px-4 py-1.5 bg-[#FAFCEE] rounded-full flex items-center gap-1.5 group-hover/grid-card:bg-[#0E5858] transition-colors">
+                                                        <FileText size={10} className="text-[#00B6C1] group-hover/grid-card:text-white" />
+                                                        <span className="text-[8px] font-black text-[#00B6C1] group-hover/grid-card:text-white uppercase tracking-widest">Brochure</span>
+                                                    </div>
+                                                </motion.a>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                            {topic.links.map(link => (
+                                                <a
+                                                    key={link.label}
+                                                    href={link.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    onClick={() => logActivity('view_content', { topicCode: topic.code, contentTitle: link.label })}
+                                                    className="group/link flex items-center justify-between px-4 py-3 bg-white text-[#0E5858] shadow-sm hover:shadow-xl rounded-2xl text-[11px] font-bold border border-[#0E5858]/5 hover:border-[#00B6C1]/20 transition-all"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="p-2 bg-[#FAFCEE] rounded-lg text-[#00B6C1] group-hover/link:bg-[#00B6C1] group-hover/link:text-white transition-colors">
+                                                            <Share2 size={12} />
+                                                        </div>
+                                                        {link.label}
+                                                    </div>
+                                                    <ArrowUpRight size={14} className="opacity-0 group-hover/link:opacity-100 transition-opacity text-[#00B6C1]" />
+                                                </a>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -272,7 +333,7 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                                         className="inline-flex items-center gap-4 px-12 py-5 bg-white text-[#0E5858] rounded-2xl font-black text-xs uppercase tracking-[0.25em] hover:bg-[#FAFCEE] transition-all hover:-translate-y-1 shadow-xl"
                                     >
                                         <Sparkles size={20} className="text-[#00B6C1]" />
-                                        Start Your Peer Review
+                                        Initialize Audit Matrix
                                     </button>
                                 </div>
                             ) : topic.caseStudyLinks ? (
@@ -301,16 +362,7 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                                             </motion.div>
                                         ))}
                                     </div>
-                                    {!videoCompleted && (
-                                        <div className="flex justify-center pt-4">
-                                            <button
-                                                onClick={() => setVideoCompleted(true)}
-                                                className="px-10 py-4 bg-[#FAFCEE] text-[#0E5858] border border-[#0E5858]/5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-[#0E5858] hover:text-white transition-all shadow-xl"
-                                            >
-                                                Confirm All Cases Studied
-                                            </button>
-                                        </div>
-                                    )}
+                                    {/* Intermediate confirmation removed as per user request */}
                                 </div>
                             ) : embedUrl ? (
                                 <div className={`transition-all duration-700 ${videoCompleted ? "opacity-60 grayscale-[0.5]" : ""}`}>
@@ -326,35 +378,9 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                                             />
                                         )}
                                     </div>
-                                    {!videoCompleted && (
-                                        <div className="mt-6 flex justify-center">
-                                            <button
-                                                onClick={() => setVideoCompleted(true)}
-                                                className="px-10 py-4 bg-[#FAFCEE] text-[#0E5858] border border-[#0E5858]/5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-[#0E5858] hover:text-white transition-all shadow-xl"
-                                            >
-                                                Confirm Session Watched
-                                            </button>
-                                        </div>
-                                    )}
+                                    {/* Intermediate confirmation removed */}
                                 </div>
-                            ) : (
-                                <div className="max-w-2xl">
-                                    {topic.isAssignment ? null : !videoCompleted ? (
-                                        <button
-                                            onClick={() => setVideoCompleted(true)}
-                                            className="w-full py-5 bg-[#0E5858] text-white rounded-2xl text-[11px] font-bold uppercase tracking-[0.25em] hover:bg-[#00B6C1] transition-all flex items-center justify-center gap-4 shadow-2xl shadow-[#0E5858]/20"
-                                        >
-                                            <CheckCircle size={20} />
-                                            Mark Material as Reviewed
-                                        </button>
-                                    ) : (
-                                        <div className="flex items-center gap-4 text-green-600 text-xs font-black uppercase tracking-[0.2em] justify-center py-5 bg-green-50/50 rounded-2xl border border-green-100/50">
-                                            <CheckCircle2 size={24} />
-                                            Learning Material Consumed
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                            ) : null}
                         </div>
 
                         {/* PHASE 2: INTERACTION (ONLY IF APPLICABLE) */}
@@ -379,16 +405,7 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                                     {topic.hasLive ? (
                                         <>
                                             <ClinicalSimulator topicTitle={topic.title} topicContent={topic.content} topicCode={topic.code} />
-                                            {!simulationCompleted && (
-                                                <div className="mt-8 flex justify-center">
-                                                    <button
-                                                        onClick={() => setSimulationCompleted(true)}
-                                                        className="px-8 py-3 bg-white text-[#0E5858] border border-[#0E5858]/10 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-[#0E5858] hover:text-white transition-all"
-                                                    >
-                                                        Confirm Protocol Practice
-                                                    </button>
-                                                </div>
-                                            )}
+                                            {/* Intermediate confirmation removed */}
                                         </>
                                     ) : (
                                         <AssignmentForm
@@ -413,24 +430,41 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                             </div>
 
                             <button
-                                onClick={onToggleComplete}
-                                disabled={!isReadyToComplete && !isCompleted}
-                                className={`group flex items-center gap-4 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.25em] transition-all duration-500 ${isCompleted
+                                onClick={async () => {
+                                    if (isSyncing || isCompleted) return;
+
+                                    setIsSyncing(true);
+                                    try {
+                                        setVideoCompleted(true);
+                                        setSimulationCompleted(true);
+                                        setAssignmentCompleted(true);
+                                        await onToggleComplete();
+                                    } finally {
+                                        setIsSyncing(false);
+                                    }
+                                }}
+                                disabled={isSyncing}
+                                className={`group flex items-center gap-4 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.25em] transition-all duration-500 relative ${isCompleted
                                     ? 'bg-green-50 border border-green-200 text-green-700'
-                                    : (isReadyToComplete
-                                        ? 'bg-[#0E5858] text-white hover:bg-[#00B6C1] hover:-translate-y-1 shadow-2xl shadow-[#0E5858]/30'
-                                        : 'bg-gray-50 text-gray-300 border border-gray-100 cursor-not-allowed opacity-50')
+                                    : (isSyncing ? 'bg-gray-100 text-gray-400 cursor-wait' : 'bg-[#0E5858] text-white hover:bg-[#00B6C1] hover:-translate-y-1 shadow-2xl shadow-[#0E5858]/30 scale-105')
                                     }`}
                             >
+                                {!isCompleted && (
+                                    <div className="absolute inset-0 bg-white/20 rounded-2xl animate-pulse pointer-events-none"></div>
+                                )}
                                 {isCompleted ? (
                                     <>
                                         <CheckCircle2 size={20} />
-                                        Success Fully Logged
+                                        Completed
                                     </>
                                 ) : (
                                     <>
-                                        <CheckCircle size={20} className="group-hover:scale-125 transition-transform" />
-                                        Complete Segment
+                                        {isSyncing ? (
+                                            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                        ) : (
+                                            <CheckCircle size={20} className="animate-bounce" />
+                                        )}
+                                        {isSyncing ? 'Syncing...' : 'Verify Knowledge & Proceed'}
                                     </>
                                 )}
                             </button>

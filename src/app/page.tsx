@@ -159,45 +159,6 @@ export default function Home() {
           </p>
         </motion.div>
 
-        {/* Main Hero Card (Overall Progress) */}
-        <motion.div
-          variants={itemVariants}
-          className="premium-card p-10 min-w-[380px] relative overflow-hidden group bg-gradient-to-br from-[#0E5858] to-[#083D3D] text-white"
-        >
-          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Clock size={120} className="text-white" />
-          </div>
-
-          <div className="relative z-10">
-            <div className="flex justify-between items-start mb-8">
-              <div>
-                <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/10 mb-3 inline-block">Estimated Completion</span>
-                <p className="text-5xl font-serif text-white">
-                  {remainingHours}h <span className="text-sm font-sans font-bold uppercase tracking-widest text-[#00B6C1]">Left</span>
-                </p>
-                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-2 italic">Based on 72-hour training target</p>
-              </div>
-              <div className="w-14 h-14 bg-[#00B6C1] rounded-2xl flex items-center justify-center text-[#0E5858] shadow-lg shadow-[#00B6C1]/20">
-                <Trophy size={28} />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="h-3 w-full bg-white/10 rounded-full overflow-hidden border border-white/5">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progressPercent * 100}%` }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  className="h-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.5)]"
-                />
-              </div>
-              <div className="flex justify-between text-[11px] font-bold text-white/40 uppercase tracking-tighter">
-                <span>Certification Progress</span>
-                <span className="text-white">{Math.round(progressPercent * 100)}% Complete</span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
       </header>
 
       {/* Dashboard Grid Sections */}
