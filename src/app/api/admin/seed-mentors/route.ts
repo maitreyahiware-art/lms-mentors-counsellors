@@ -1,21 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    }
-);
-
-console.log('Connecting to Supabase at:', process.env.NEXT_PUBLIC_SUPABASE_URL); // Debugging
+import { supabaseAdmin } from '@/lib/supabase';
 
 
 export async function POST() {
+
     const mentors = [
         { name: 'Anjali Mehta', email: 'anjali.m@balancenutrition.in' },
         { name: 'Rahul Sharma', email: 'rahul.s@balancenutrition.in' },

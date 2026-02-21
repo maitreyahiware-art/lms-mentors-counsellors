@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { Bell, LogOut, Loader2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Analytics } from "@vercel/analytics/next";
+import { Analytics } from "@vercel/analytics/react";
 
 const playfair = Playfair_Display({
   variable: "--font-serif",
@@ -56,7 +56,16 @@ export default function RootLayout({
           role: role
         });
 
-        if (isLoginPage) router.push("/");
+        if (isLoginPage) {
+          if (role === 'admin') {
+            router.push("/admin");
+          } else {
+            router.push("/");
+          }
+        } else if (pathname.startsWith('/admin') && role !== 'admin') {
+          // Access control: non-admins cannot access admin routes
+          router.push("/");
+        }
       } else if (!isLoginPage) {
         router.push("/login");
       }
@@ -69,12 +78,20 @@ export default function RootLayout({
       if (event === 'SIGNED_IN' && session) {
         setIsAuthenticated(true);
         const name = session.user.user_metadata?.full_name || 'Counselor';
-        const role = session.user.user_metadata?.role || 'interviewee';
+        const role = session.user.user_metadata?.role || 'mentor';
         setUserName(name);
         setUserEmail(session.user.email || '');
         setUserRole(role);
-        router.push("/");
+
+        if (isLoginPage) {
+          if (role === 'admin') {
+            router.push("/admin");
+          } else {
+            router.push("/");
+          }
+        }
       } else if (event === 'SIGNED_OUT') {
+
         setIsAuthenticated(false);
         setUserName("Counselor");
         setUserEmail("");

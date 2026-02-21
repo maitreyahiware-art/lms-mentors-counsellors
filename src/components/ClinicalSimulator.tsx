@@ -23,6 +23,26 @@ export default function ClinicalSimulator({ topicTitle, topicContent, topicCode 
         }
     }, [messages]);
 
+    useEffect(() => {
+        const fetchHistory = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                const { data } = await supabase
+                    .from('simulation_logs')
+                    .select('chat_history')
+                    .eq('user_id', session.user.id)
+                    .eq('topic_code', topicCode)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+
+                if (data && data.length > 0) {
+                    setMessages(data[0].chat_history);
+                }
+            }
+        };
+        fetchHistory();
+    }, [topicCode]);
+
     const startSimulation = () => {
         setIsOpen(true);
         if (messages.length === 0) {

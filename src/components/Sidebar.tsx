@@ -17,7 +17,7 @@ import {
     UserPlus,
     ClipboardList
 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 
@@ -55,6 +55,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, userName, userEma
     userRole: string
 }) {
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const initials = getInitials(userName || 'M');
 
     // Use admin specific items if role is admin
@@ -138,8 +139,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, userName, userEma
             <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto">
                 {currentNavItems.map((item) => {
                     const isActive = pathname === item.href || (item.href.includes('?') ? pathname === item.href.split('?')[0] : pathname === item.href);
-                    // Special logic for active tab in admin
-                    const isTabActive = item.href.includes('?tab=') && window.location.search.includes(item.href.split('?')[1]);
+
+                    // Better tab detection using useSearchParams
+                    const tabParam = item.href.split('tab=')[1];
+                    const currentTab = searchParams.get('tab');
+                    const isTabActive = tabParam && currentTab === tabParam;
 
                     return (
                         <Link

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Send, CheckCircle2, Loader2, ClipboardList, User, Building2, ArrowRight, UserCircle2, BrainCircuit, Sparkles, AlertCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,11 +10,12 @@ interface AssignmentFormProps {
     questions: string[];
     persona?: { story: string; goal: string };
     onComplete?: () => void;
+    userId?: string;
 }
 
 type FormStep = "persona" | "define-persona" | "selection" | "questions";
 
-export default function AssignmentForm({ topicCode, questions, persona, onComplete }: AssignmentFormProps) {
+export default function AssignmentForm({ topicCode, questions, persona, onComplete, userId }: AssignmentFormProps) {
     const [step, setStep] = useState<FormStep>(persona ? "persona" : "questions");
     const [userPersona, setUserPersona] = useState({ story: "", goal: "" });
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -27,6 +28,35 @@ export default function AssignmentForm({ topicCode, questions, persona, onComple
     const [caughtError, setCaughtError] = useState<string | null>(null);
     const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
     const [selectedDieticians, setSelectedDieticians] = useState<string[]>([]);
+
+    // Persistence Logic
+    useEffect(() => {
+        if (!userId) return;
+        const key = `bn-draft-${userId}-${topicCode}`;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+            try {
+                const draft = JSON.parse(saved);
+                if (draft.answers && draft.answers.length === questions.length) {
+                    setAnswers(draft.answers);
+                }
+                if (draft.userPersona) setUserPersona(draft.userPersona);
+                if (draft.selectedCompanies) setSelectedCompanies(draft.selectedCompanies);
+                if (draft.selectedDieticians) setSelectedDieticians(draft.selectedDieticians);
+            } catch (e) { console.error("Draft load error:", e); }
+        }
+    }, [userId, topicCode, questions.length]);
+
+    useEffect(() => {
+        if (!userId || submitted) return;
+        const key = `bn-draft-${userId}-${topicCode}`;
+        localStorage.setItem(key, JSON.stringify({
+            answers,
+            userPersona,
+            selectedCompanies,
+            selectedDieticians
+        }));
+    }, [answers, userPersona, selectedCompanies, selectedDieticians, userId, topicCode, submitted]);
 
     const competitors = ["Healthify Me", "Sugar Fit", "Fitelo", "Fittr", "Fitterfly", "Livofy"];
     const dieticians = ["Anjali Mukherjee", "Rashi Chaudhary", "Neha Ranglani", "Nisha Malhotra", "Pooja Makhija", "Shikha Sharma"];
@@ -114,6 +144,7 @@ export default function AssignmentForm({ topicCode, questions, persona, onComple
                 }
 
                 setSubmitted(true);
+                if (userId) localStorage.removeItem(`bn-draft-${userId}-${topicCode}`);
                 if (onComplete) onComplete();
             } else {
                 setCaughtError("Your session has expired. Please log in again.");

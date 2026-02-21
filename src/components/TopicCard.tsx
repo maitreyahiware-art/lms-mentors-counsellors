@@ -27,12 +27,14 @@ import AIAssessment from "./AIAssessment";
 import SummaryGrader from "./SummaryGrader";
 import AssignmentForm from "./AssignmentForm";
 import { Topic } from "@/data/syllabus";
+import { logActivity } from "@/lib/activity";
 
 interface TopicCardProps {
     topic: Topic;
     index: number;
     isCompleted: boolean;
     onToggleComplete: () => void;
+    userId?: string;
 }
 
 function getEmbedUrl(url: string | undefined): string | null {
@@ -71,7 +73,7 @@ function getDocEmbedUrl(url: string): string {
     return url;
 }
 
-export default function TopicCard({ topic, index, isCompleted, onToggleComplete }: TopicCardProps) {
+export default function TopicCard({ topic, index, isCompleted, onToggleComplete, userId }: TopicCardProps) {
     const [videoCompleted, setVideoCompleted] = useState(false);
     const [simulationCompleted, setSimulationCompleted] = useState(false);
     const [assignmentCompleted, setAssignmentCompleted] = useState(false);
@@ -87,7 +89,7 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete 
 
     // Persist progress to local storage
     useEffect(() => {
-        const key = `bn-topic-progress-${topic.code}`;
+        const key = `bn-topic-progress-${userId || 'anon'}-${topic.code}`;
         const saved = localStorage.getItem(key);
         if (saved) {
             const progress = JSON.parse(saved);
@@ -99,19 +101,19 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete 
             setSimulationCompleted(true);
             setAssignmentCompleted(true);
         }
-    }, [topic.code, isCompleted]);
+    }, [topic.code, isCompleted, userId]);
 
     useEffect(() => {
         // Don't save if it's already fully completed via the global toggle to avoid redundancy
         if (isCompleted) return;
 
-        const key = `bn-topic-progress-${topic.code}`;
+        const key = `bn-topic-progress-${userId || 'anon'}-${topic.code}`;
         localStorage.setItem(key, JSON.stringify({
             video: videoCompleted,
             simulation: simulationCompleted,
             assignment: assignmentCompleted
         }));
-    }, [videoCompleted, simulationCompleted, assignmentCompleted, topic.code, isCompleted]);
+    }, [videoCompleted, simulationCompleted, assignmentCompleted, topic.code, isCompleted, userId]);
 
     const handleVideoComplete = () => {
         setVideoCompleted(true);
@@ -214,6 +216,7 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete 
                                                 href={link.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                onClick={() => logActivity('view_content', { topicCode: topic.code, contentTitle: link.label })}
                                                 className="group/link flex items-center justify-between px-4 py-3 bg-white text-[#0E5858] shadow-sm hover:shadow-xl rounded-2xl text-[11px] font-bold border border-[#0E5858]/5 hover:border-[#00B6C1]/20 transition-all"
                                             >
                                                 <div className="flex items-center gap-3">
@@ -279,7 +282,10 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete 
                                             <motion.div
                                                 key={i}
                                                 whileHover={{ y: -5, scale: 1.02 }}
-                                                onClick={() => setSelectedCaseStudy(link)}
+                                                onClick={() => {
+                                                    setSelectedCaseStudy(link);
+                                                    logActivity('view_content', { topicCode: topic.code, contentTitle: `Case Study #${i + 1}` });
+                                                }}
                                                 className="aspect-[4/5] bg-[#FAFCEE] border border-[#0E5858]/5 rounded-2xl p-4 flex flex-col justify-between cursor-pointer group/case shadow-sm hover:shadow-xl hover:bg-white transition-all overflow-hidden relative"
                                             >
                                                 <div className="absolute top-0 right-0 p-2 opacity-10 group-hover/case:opacity-100 transition-opacity">
@@ -390,6 +396,7 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete 
                                             questions={topic.assignmentQuestions || []}
                                             persona={topic.persona}
                                             onComplete={() => setAssignmentCompleted(true)}
+                                            userId={userId}
                                         />
                                     )}
                                 </div>

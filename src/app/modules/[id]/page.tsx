@@ -26,8 +26,10 @@ import { supabase } from "@/lib/supabase";
 import AIAssessment from "@/components/AIAssessment";
 import ClinicalSimulator from "@/components/ClinicalSimulator";
 import { AnimatePresence } from "framer-motion";
+import { logActivity } from "@/lib/activity";
 
 export default function ModulePage() {
+
     const params = useParams();
     const router = useRouter();
     const moduleId = params.id as string;
@@ -35,6 +37,7 @@ export default function ModulePage() {
     const module = syllabusData.find(m => m.id === moduleId);
 
     const [completedTopics, setCompletedTopics] = useState<string[]>([]);
+    const [userId, setUserId] = useState<string | undefined>();
     const [showModuleAssessment, setShowModuleAssessment] = useState(false);
     const [assessmentPassed, setAssessmentPassed] = useState(false);
     const [showVivaIntro, setShowVivaIntro] = useState(false);
@@ -45,9 +48,17 @@ export default function ModulePage() {
     const moduleContentSummary = module?.topics.map(t => `${t.title}: ${t.content}`).join("\n\n") || "";
 
     useEffect(() => {
+        if (moduleId) {
+            logActivity('view_topic', { moduleId, contentTitle: module?.title });
+        }
+    }, [moduleId, module?.title]);
+
+    useEffect(() => {
         const fetchProgress = async () => {
+
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
+                setUserId(session.user.id);
                 const { data } = await supabase
                     .from('mentor_progress')
                     .select('topic_code')
@@ -440,6 +451,7 @@ export default function ModulePage() {
                             index={index}
                             isCompleted={completedTopics.includes(topic.code)}
                             onToggleComplete={() => toggleTopic(topic.code)}
+                            userId={userId}
                         />
                     ))
                 ) : (

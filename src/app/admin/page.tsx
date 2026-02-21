@@ -27,7 +27,8 @@ import {
     Link as LinkIcon,
     File as FileIcon,
     Plus,
-    Database
+    Database,
+    Key as BNKeyIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -46,6 +47,8 @@ interface MentorProfile extends Profile {
         progress: number;
         avgScore: number;
         totalQuizzes: number;
+        totalAudits: number;
+        totalActivity: number;
         lastActive: string;
     }
 }
@@ -60,8 +63,29 @@ export default function AdminDashboard() {
     const [stats, setStats] = useState({
         totalMentors: 0,
         avgKnowledge: 0,
-        pendingReviews: 0
+        pendingReviews: 0,
+        totalActivity: 0
     });
+
+    interface ActivityLog {
+        id: string;
+        user_id: string;
+        activity_type: string;
+        content_title: string;
+        created_at: string;
+        module_id?: string;
+    }
+
+    interface SummaryAudit {
+        id: string;
+        user_id: string;
+        topic_code: string;
+        score: number;
+        created_at: string;
+    }
+
+    const [allActivity, setAllActivity] = useState<ActivityLog[]>([]);
+    const [allAudits, setAllAudits] = useState<SummaryAudit[]>([]);
 
     // Sync state with URL params
     useEffect(() => {
@@ -125,17 +149,35 @@ export default function AdminDashboard() {
 
             if (aError) throw aError;
 
+            // Fetch activity logs
+            const { data: activity, error: actError } = await supabase
+                .from('mentor_activity_logs')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            // Fetch summary audits (peer reviews)
+            const { data: audits, error: audError } = await supabase
+                .from('summary_audits')
+                .select('id, user_id, topic_code, score, created_at')
+                .order('created_at', { ascending: false });
+
+            setAllActivity(activity || []);
+            setAllAudits(audits || []);
+
             // Map stats to mentors
             const mappedMentors = (profiles || []).map(p => {
-                const mentorAssessments = (assessments || []).filter(a => a.user_id === p.id);
-                const uniqueCompletedTopics = new Set(mentorAssessments.map(a => a.topic_code));
+                const mentorAssessments = (assessments || []).filter((a: any) => a.user_id === p.id);
+                const mentorActivity = (activity || []).filter((a: any) => a.user_id === p.id);
+                const mentorAudits = (audits || []).filter((a: any) => a.user_id === p.id);
+
+                const uniqueCompletedTopics = new Set(mentorAssessments.map((a: any) => a.topic_code));
 
                 // Calculate progress based on unique topics vs total topics in syllabus
                 const totalTopics = syllabusData.reduce((acc, m) => acc + m.topics.length, 0);
                 const progress = totalTopics > 0 ? Math.round((uniqueCompletedTopics.size / totalTopics) * 100) : 0;
 
                 const avgScore = mentorAssessments.length > 0
-                    ? Math.round((mentorAssessments.reduce((acc, curr) => acc + (curr.score / curr.total_questions), 0) / mentorAssessments.length) * 100)
+                    ? Math.round((mentorAssessments.reduce((acc: number, curr: any) => acc + (curr.score / curr.total_questions), 0) / mentorAssessments.length) * 100)
                     : 0;
 
                 return {
@@ -144,7 +186,9 @@ export default function AdminDashboard() {
                         progress,
                         avgScore,
                         totalQuizzes: mentorAssessments.length,
-                        lastActive: mentorAssessments.length > 0 ? mentorAssessments.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at : p.created_at || new Date().toISOString()
+                        totalAudits: mentorAudits.length,
+                        totalActivity: mentorActivity.length,
+                        lastActive: mentorActivity.length > 0 ? mentorActivity[0].created_at : (p.created_at || new Date().toISOString())
                     }
                 } as MentorProfile;
             });
@@ -153,7 +197,9 @@ export default function AdminDashboard() {
             setStats(prev => ({
                 ...prev,
                 totalMentors: mappedMentors.length,
-                avgKnowledge: mappedMentors.length > 0 ? Math.round(mappedMentors.reduce((acc, m) => acc + (m.stats?.avgScore || 0), 0) / mappedMentors.length) : 0
+                avgKnowledge: mappedMentors.length > 0 ? Math.round(mappedMentors.reduce((acc, m) => acc + (m.stats?.avgScore || 0), 0) / mappedMentors.length) : 0,
+                pendingReviews: (audits || []).filter((a: any) => a.score === 0).length,
+                totalActivity: (activity || []).length
             }));
         } catch (err) {
             console.error("Error fetching mentor data:", err);
@@ -238,7 +284,7 @@ export default function AdminDashboard() {
             {/* Navigation Tabs */}
             <div className="flex items-center gap-4 mb-10 overflow-x-auto pb-4 scrollbar-hide">
                 {[
-                    { id: 'credentials', label: 'Provision Keys', icon: KeyIcon },
+                    { id: 'credentials', label: 'Provision Keys', icon: BNKeyIcon },
                     { id: 'content-architect', label: 'Content Architect', icon: Database },
                     { id: 'mentor-logs', label: 'Mentor Logs', icon: BarChart3 }
                 ].map(tab => (
@@ -315,7 +361,7 @@ export default function AdminDashboard() {
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-[#0E5858]/50 uppercase tracking-[0.2em] ml-2">Temporary Access Key</label>
                                             <div className="relative group">
-                                                <KeyIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#00B6C1] transition-colors" size={20} />
+                                                <BNKeyIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#00B6C1] transition-colors" size={20} />
                                                 <input
                                                     type="password"
                                                     value={newUser.password}
@@ -536,8 +582,18 @@ export default function AdminDashboard() {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Quizzes Taken</p>
-                                                    <p className="text-2xl font-serif text-[#0E5858]">{mentor.stats?.totalQuizzes}</p>
+                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Audits & activity</p>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xl font-serif text-[#0E5858]">{mentor.stats?.totalAudits || 0}</span>
+                                                            <span className="text-[7px] font-bold text-gray-400 uppercase">Peer Audits</span>
+                                                        </div>
+                                                        <div className="w-px h-6 bg-gray-200"></div>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xl font-serif text-[#0E5858]">{mentor.stats?.totalActivity || 0}</span>
+                                                            <span className="text-[7px] font-bold text-gray-400 uppercase">Views</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 <div>
@@ -545,7 +601,9 @@ export default function AdminDashboard() {
                                                     <p className="text-xs font-bold text-[#0E5858]">
                                                         {new Date(mentor.stats?.lastActive || '').toLocaleDateString()}
                                                     </p>
-                                                    <p className="text-[9px] text-gray-400 font-medium italic mt-1">Intelligence Synced</p>
+                                                    <p className="text-[9px] text-gray-400 font-medium italic mt-1">
+                                                        {Math.floor((new Date().getTime() - new Date(mentor.stats?.lastActive || '').getTime()) / (1000 * 60 * 60 * 24))} days ago
+                                                    </p>
                                                 </div>
                                             </div>
 
@@ -569,12 +627,66 @@ export default function AdminDashboard() {
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Detailed Activity Feed */}
+                                <div className="mt-12 p-10 bg-[#FAFCEE]/30 rounded-[3rem] border border-[#0E5858]/5">
+                                    <h3 className="text-xl font-serif text-[#0E5858] mb-8 flex items-center gap-3">
+                                        <Activity size={20} className="text-[#00B6C1]" />
+                                        Global System Activity
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {allActivity.slice(0, 15).map((log) => {
+                                            const mentor = mentors.find(m => m.id === log.user_id);
+                                            return (
+                                                <div key={log.id} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-50 shadow-sm">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-8 h-8 rounded-lg bg-[#0E5858]/10 text-[#0E5858] flex items-center justify-center text-[10px] font-black">
+                                                            {mentor?.full_name?.[0] || '?'}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[11px] font-bold text-[#0E5858]">
+                                                                <span className="opacity-50">{mentor?.full_name || 'System'}</span> {log.activity_type.replace('_', ' ')}
+                                                            </p>
+                                                            <p className="text-[10px] text-[#00B6C1] font-medium">{log.content_title || log.module_id || 'Global Navigation'}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">
+                                                        {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                        {allActivity.length === 0 && (
+                                            <p className="text-center py-10 text-[10px] font-bold text-gray-300 uppercase tracking-widest">No recent neural activity detected</p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
                 </motion.div>
             </AnimatePresence>
         </main>
+    );
+}
+
+// Custom Activity Icon if not imported
+function Activity(props: any) {
+    return (
+        <svg
+            {...props}
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        </svg>
     );
 }
 

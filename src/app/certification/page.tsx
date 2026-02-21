@@ -15,6 +15,7 @@ import {
     Clock,
     Send
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 const sections = [
@@ -63,6 +64,7 @@ const sections = [
 ];
 
 export default function CertificationPage() {
+    const router = useRouter();
     const [started, setStarted] = useState(false);
     const [currentSection, setCurrentSection] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -162,7 +164,7 @@ export default function CertificationPage() {
                     </div>
 
                     <button
-                        onClick={() => window.location.href = '/'}
+                        onClick={() => router.push('/')}
                         className="px-10 py-4 bg-[#0E5858] text-white font-bold rounded-2xl shadow-xl hover:bg-[#00B6C1] transition-all"
                     >
                         Return to Dashboard

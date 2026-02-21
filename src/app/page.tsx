@@ -23,18 +23,84 @@ import { useRouter } from "next/navigation";
 import { syllabusData } from "@/data/syllabus";
 import { motion, Variants } from "framer-motion";
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
   const router = useRouter();
   const displayModules = syllabusData;
   const [completedModules, setCompletedModules] = useState<string[]>([]);
+  const [userStats, setUserStats] = useState({ progress: 0, avgScore: 0, quizzes: 0 });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem('bn-lms-completed-modules');
-    if (saved) {
-      setCompletedModules(JSON.parse(saved));
-    }
+    const fetchPersonalStats = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      // 1. Fetch Assessment Scores
+      const { data: assessments } = await supabase
+        .from('assessment_logs')
+        .select('*')
+        .eq('user_id', session.user.id);
+
+      // 2. Fetch Detailed Topic Progress
+      const { data: topicProgress, error: tpError } = await supabase
+        .from('mentor_progress')
+        .select('topic_code')
+        .eq('user_id', session.user.id);
+
+      console.log(`[Supabase Check] Fetched ${topicProgress?.length || 0} progress records. Error:`, tpError);
+
+      const completedTopicCodes = new Set(topicProgress?.map(p => p.topic_code) || []);
+      const dbCompletedModules: string[] = [];
+
+      // Calculate which modules are done based on syllabus
+      syllabusData.forEach(module => {
+        const allTopicsDone = module.topics.every(t => completedTopicCodes.has(t.code));
+        if (allTopicsDone && module.topics.length > 0) {
+          dbCompletedModules.push(module.id);
+        }
+      });
+
+      setCompletedModules(dbCompletedModules);
+
+      const totalTopics = syllabusData.reduce((acc, m) => acc + m.topics.length, 0);
+      const compositeProgress = totalTopics > 0 ? Math.round((completedTopicCodes.size / totalTopics) * 100) : 0;
+
+      if (assessments && assessments.length > 0) {
+        const avgScore = Math.round((assessments.reduce((acc: number, curr: any) => acc + (curr.score / curr.total_questions), 0) / assessments.length) * 100);
+
+        setUserStats({
+          progress: compositeProgress,
+          avgScore,
+          quizzes: assessments.length
+        });
+      } else {
+        setUserStats(prev => ({ ...prev, progress: compositeProgress }));
+      }
+
+      // Fallback to localStorage only if DB is empty for this user
+      if (completedTopicCodes.size === 0) {
+        const saved = localStorage.getItem('bn-lms-completed-modules');
+        if (saved) {
+          setCompletedModules(JSON.parse(saved));
+        }
+      }
+      setLoading(false);
+    };
+    fetchPersonalStats();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#FAFCEE]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-[#0E5858]/10 border-t-[#00B6C1] rounded-full animate-spin"></div>
+          <p className="text-xs font-bold text-[#0E5858]/30 uppercase tracking-[0.2em]">Synchronizing Your Dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   const toggleModule = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
