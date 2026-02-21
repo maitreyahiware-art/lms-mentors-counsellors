@@ -10,11 +10,17 @@ import {
     ChevronRight,
     ChevronLeft,
     Brain,
+    ArrowRight,
+    Building2,
+    Dumbbell,
+    Stethoscope,
+    FlaskConical,
+    School,
+    FileText,
     ShoppingBag,
     Globe,
     Activity,
-    Target,
-    ArrowRight
+    Target
 } from "lucide-react";
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -528,6 +534,75 @@ export default function ModulePage() {
                                 <div className="mt-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#00B6C1] opacity-0 group-hover:opacity-100 transition-all">
                                     Launch Platform
                                     <ArrowRight size={14} />
+                                </div>
+                            </motion.a>
+                        ))}
+                    </div>
+
+                    <div className="flex items-center gap-6 mt-20 mb-12">
+                        <div className="w-1.5 h-10 bg-[#FFCC00] rounded-full"></div>
+                        <div>
+                            <h3 className="text-3xl font-serif text-[#0E5858]">BN Verticals</h3>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-1">Institutional & Clinical Brochures</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                        {[
+                            {
+                                title: "Corporate Wellness",
+                                url: "#",
+                                desc: "Corporate Health Brochure",
+                                icon: Building2,
+                                color: "#0E5858"
+                            },
+                            {
+                                title: "Fitness",
+                                url: "https://drive.google.com/file/d/1pqk_ayXs67u-HFUgHOJapDisNI_O3tT9/view?usp=sharing",
+                                desc: "Fitness Vertical Brochure",
+                                icon: Dumbbell,
+                                color: "#00B6C1"
+                            },
+                            {
+                                title: "Doctors",
+                                url: "https://drive.google.com/file/d/1WT5THSzQyvsJHE7aA3QExPrE0qpUVv2T/view?usp=drive_link",
+                                desc: "Doctor Network Brochure",
+                                icon: Stethoscope,
+                                color: "#FF5733"
+                            },
+                            {
+                                title: "Diagnostics",
+                                url: "https://drive.google.com/file/d/1smbdyHpELk0-07mpUxvkTIiXG3gV5Ftp/view?usp=drive_link",
+                                desc: "Diagnostic Integration",
+                                icon: FlaskConical,
+                                color: "#6C5CE7"
+                            },
+                            {
+                                title: "Institutional",
+                                url: "https://drive.google.com/file/d/1kJtC2VsfclkJVAg_RDc8ge-vqAALcPgR/view?usp=drive_link",
+                                desc: "Institutional Partnerships",
+                                icon: School,
+                                color: "#FF7675"
+                            }
+                        ].map((vertical, i) => (
+                            <motion.a
+                                key={i}
+                                href={vertical.url}
+                                target="_blank"
+                                whileHover={{ y: -5, scale: 1.02 }}
+                                className="premium-card p-6 group relative overflow-hidden flex flex-col items-center text-center border-2 border-[#FAFCEE] bg-white hover:border-[#0E5858]/10 transition-all shadow-lg"
+                            >
+                                <div
+                                    className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-all group-hover:rotate-6 bg-gray-50 text-[#0E5858] group-hover:bg-[#0E5858] group-hover:text-white shadow-inner"
+                                >
+                                    <vertical.icon size={24} />
+                                </div>
+                                <h4 className="text-sm font-bold text-[#0E5858] mb-1">{vertical.title}</h4>
+                                <p className="text-[10px] text-gray-400 font-medium">{vertical.desc}</p>
+
+                                <div className="mt-6 p-2 bg-[#FAFCEE] rounded-xl text-[8px] font-black uppercase tracking-widest text-[#0E5858] flex items-center gap-2 group-hover:bg-[#0E5858] group-hover:text-white transition-all">
+                                    <FileText size={12} />
+                                    Brochure
                                 </div>
                             </motion.a>
                         ))}

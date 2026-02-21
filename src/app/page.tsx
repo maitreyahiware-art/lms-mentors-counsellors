@@ -206,7 +206,7 @@ export default function Home() {
         {/* Meet Our Team */}
         <motion.section variants={itemVariants} className="lg:col-span-4 flex flex-col gap-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-serif text-[#0E5858]">Clinical Support Team</h3>
+            <h3 className="text-2xl font-serif text-[#0E5858]">Training Support</h3>
           </div>
 
           <div className="premium-card p-8 flex-1 space-y-6">
