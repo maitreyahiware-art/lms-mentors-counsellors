@@ -32,7 +32,7 @@ export default function RootLayout({
   const isLoginPage = pathname === "/login";
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userName, setUserName] = useState("Counselor");
+  const [userName, setUserName] = useState("Counsellor");
   const [userEmail, setUserEmail] = useState("");
   const [userRole, setUserRole] = useState("interviewee");
 
@@ -42,7 +42,7 @@ export default function RootLayout({
 
       if (session) {
         setIsAuthenticated(true);
-        const name = session.user.user_metadata?.full_name || 'Counselor';
+        const name = session.user.user_metadata?.full_name || 'Counsellor';
         const role = session.user.user_metadata?.role || 'interviewee';
         setUserName(name);
         setUserEmail(session.user.email || '');
@@ -77,8 +77,8 @@ export default function RootLayout({
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         setIsAuthenticated(true);
-        const name = session.user.user_metadata?.full_name || 'Counselor';
-        const role = session.user.user_metadata?.role || 'mentor';
+        const name = session.user.user_metadata?.full_name || 'Counsellor';
+        const role = session.user.user_metadata?.role || 'counsellor';
         setUserName(name);
         setUserEmail(session.user.email || '');
         setUserRole(role);
@@ -93,7 +93,7 @@ export default function RootLayout({
       } else if (event === 'SIGNED_OUT') {
 
         setIsAuthenticated(false);
-        setUserName("Counselor");
+        setUserName("Counsellor");
         setUserEmail("");
         setUserRole("interviewee");
         router.push("/login");
@@ -140,8 +140,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <title>Balance Nutrition | Counselor LMS Premium</title>
-        <meta name="description" content="The world's most trusted Indian health ecosystem counselor portal." />
+        <title>Balance Nutrition | Counsellor LMS Premium</title>
+        <meta name="description" content="The world's most trusted Indian health ecosystem counsellor portal." />
       </head>
       <body className={`${playfair.variable} ${outfit.variable} font-sans text-[#0E5858] bg-[#FAFCEE] antialiased overflow-x-hidden`}>
         <div className="flex min-h-screen">

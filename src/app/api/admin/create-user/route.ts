@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { verifyAdmin } from '@/lib/admin-auth';
 
 export async function POST(request: Request) {
 
+    // Server-side admin check
+    const auth = await verifyAdmin(request);
+    if (!auth.authorized) return auth.response;
+
     try {
-        const { email, password, fullName, role } = await request.json();
+        const { email, password, fullName, role, trainingBuddy } = await request.json();
 
         if (!email || !password || !fullName) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -15,7 +20,11 @@ export async function POST(request: Request) {
             email,
             password,
             email_confirm: true,
-            user_metadata: { full_name: fullName }
+            user_metadata: {
+                full_name: fullName,
+                role: role || 'counsellor',
+                training_buddy: trainingBuddy || ''
+            }
         });
 
         if (authError) {
@@ -28,18 +37,19 @@ export async function POST(request: Request) {
         if (userId) {
             const { error: profileError } = await supabaseAdmin
                 .from('profiles')
-                .insert({
+                .upsert({
                     id: userId,
                     email,
                     full_name: fullName,
-                    role: role || 'mentor'
+                    role: role || 'counsellor',
+                    training_buddy: trainingBuddy || '',
+                    temp_password: password,
+                    updated_at: new Date().toISOString()
                 });
 
             if (profileError) {
-                // Check if profile already exists (unlikely with new user but good to be safe)
-                if (profileError.code !== '23505') {
-                    console.error('Profile creation error:', profileError);
-                }
+                // If column doesn't exist, we'll log it but not fail the creation
+                console.warn('Profile enrichment warning (column might be missing):', profileError.message);
             }
         }
 

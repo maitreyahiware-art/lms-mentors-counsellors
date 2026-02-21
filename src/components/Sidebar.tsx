@@ -5,7 +5,6 @@ import Link from 'next/link';
 import {
     LayoutDashboard,
     GraduationCap,
-    Image as ImageIcon,
     Info,
     ChevronLeft,
     ChevronRight,
@@ -15,7 +14,8 @@ import {
     Award,
     CheckCircle2,
     UserPlus,
-    ClipboardList
+    ClipboardList,
+    Shield
 } from 'lucide-react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -30,11 +30,12 @@ const navItems = [
 ];
 
 const adminNavItems = [
+    { name: 'Dashboard Hub', href: '/admin?tab=hub', icon: Shield },
     { name: 'Training Modules', href: '/training', icon: GraduationCap },
     { name: 'Content Bank', href: '/content-bank', icon: BarChart3 },
-    { name: 'Provision Keys', href: '/admin?tab=credentials', icon: UserPlus },
-    { name: 'Content Architect', href: '/admin?tab=content-architect', icon: LayoutDashboard },
-    { name: 'Mentor Logs', href: '/admin?tab=mentor-logs', icon: ClipboardList },
+    { name: 'Provision Keys', href: '/admin?tab=provisioning', icon: UserPlus },
+    { name: 'Content Architect', href: '/admin?tab=architect', icon: LayoutDashboard },
+    { name: 'Counsellor Registry', href: '/admin?tab=registry', icon: ClipboardList },
 ];
 
 function getInitials(name: string): string {
@@ -59,7 +60,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, userName, userEma
     const initials = getInitials(userName || 'M');
 
     // Use admin specific items if role is admin
-    const currentNavItems = userRole === 'admin' || userRole === 'founder' ? adminNavItems : navItems;
+    const currentNavItems = userRole === 'admin' ? adminNavItems : navItems;
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -104,7 +105,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, userName, userEma
                         <span className="font-serif font-bold text-xl leading-none">
                             Balance <span className="text-[#00B6C1]">Nutrition</span>
                         </span>
-                        <span className="text-[10px] text-[#00B6C1] font-bold tracking-[0.2em] uppercase mt-1 opacity-70">Counselor Academy</span>
+                        <span className="text-[10px] text-[#00B6C1] font-bold tracking-[0.2em] uppercase mt-1 opacity-70">Counsellor Academy</span>
                     </motion.div>
                 )}
             </div>
@@ -187,27 +188,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, userName, userEma
                         </div>
                         <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-[#0E5858] rounded-full z-20"></div>
                     </div>
-                    {!isCollapsed && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="overflow-hidden"
-                        >
-                            <p className="text-sm font-bold truncate tracking-tight">{userName}</p>
-                            <p className="text-[10px] text-[#00B6C1] font-bold uppercase tracking-widest opacity-80">{userRole}</p>
-                        </motion.div>
-                    )}
                 </div>
-
-                {!isCollapsed && (
-                    <button
-                        onClick={handleLogout}
-                        className="mt-6 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white/30 hover:bg-white/5 hover:text-white transition-all border border-transparent hover:border-white/10"
-                    >
-                        <LogOut size={14} />
-                        Sign Out
-                    </button>
-                )}
             </div>
         </motion.aside>
     );

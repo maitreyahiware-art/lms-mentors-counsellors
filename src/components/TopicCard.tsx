@@ -19,6 +19,7 @@ import {
     FileText,
     Maximize2,
     ArrowUpRight,
+    ArrowRight,
     BrainCircuit,
     ShoppingBag,
     Globe,
@@ -27,7 +28,8 @@ import {
     Stethoscope,
     FlaskConical,
     School,
-    HeartPulse
+    HeartPulse,
+    Calendar
 } from "lucide-react";
 import YouTubePlayer from "./YouTubePlayer";
 import ClinicalSimulator from "./ClinicalSimulator";
@@ -42,7 +44,11 @@ interface TopicCardProps {
     index: number;
     isCompleted: boolean;
     onToggleComplete: () => void;
+    onMoveNext?: (justDoneCode?: string) => void;
+    isLastTopic?: boolean;
     userId?: string;
+    isEditMode?: boolean;
+    onEdit?: (updatedFields: Partial<Topic>) => void;
 }
 
 function getEmbedUrl(url: string | undefined): string | null {
@@ -86,10 +92,11 @@ function getDocEmbedUrl(url: string): string {
     return url;
 }
 
-export default function TopicCard({ topic, index, isCompleted, onToggleComplete, userId }: TopicCardProps) {
+export default function TopicCard({ topic, index, isCompleted, onToggleComplete, onMoveNext, isLastTopic, userId, isEditMode, onEdit }: TopicCardProps) {
     const [videoCompleted, setVideoCompleted] = useState(false);
     const [simulationCompleted, setSimulationCompleted] = useState(false);
     const [assignmentCompleted, setAssignmentCompleted] = useState(false);
+    const [showHealthPopup, setShowHealthPopup] = useState(false);
     const [selectedCaseStudy, setSelectedCaseStudy] = useState<string | null>(null);
     const [isSyncing, setIsSyncing] = useState(false);
 
@@ -139,7 +146,7 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
         (topic.hasLive ? simulationCompleted : true);
 
     return (
-        <div className={`premium-card p-6 lg:p-10 group cursor-default relative transition-all duration-500 ${isCompleted ? 'bg-[#FAFCEE]/80 border-[#0E5858]/10' : 'bg-white'}`}>
+        <div id={`topic-${topic.code}`} className={`premium-card p-6 lg:p-10 group cursor-default relative transition-all duration-500 ${isCompleted ? 'bg-[#FAFCEE]/80 border-[#0E5858]/10' : 'bg-white'}`}>
             {/* Case Study Overlay */}
             <AnimatePresence>
                 {selectedCaseStudy && (
@@ -170,6 +177,70 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                         </div>
                     </motion.div>
                 )}
+                {showHealthPopup && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-[#0E5858]/95 backdrop-blur-xl"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="w-full max-w-2xl bg-white rounded-[3rem] p-12 shadow-2xl relative overflow-hidden"
+                        >
+                            <button
+                                onClick={() => setShowHealthPopup(false)}
+                                className="absolute top-8 right-8 text-[#0E5858]/40 hover:text-[#0E5858]"
+                            >
+                                <X size={24} />
+                            </button>
+
+                            <div className="mb-10 text-left">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FF5733]/10 text-[#FF5733] rounded-full text-[10px] font-bold uppercase tracking-widest mb-4">
+                                    <Activity size={12} />
+                                    BN Health Ecosystem
+                                </div>
+                                <h2 className="text-4xl font-serif text-[#0E5858] mb-2">Health & Diagnostics</h2>
+                                <p className="text-gray-500 font-medium italic">"Integrated clinical support for optimized patient results."</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <a
+                                    href="https://drive.google.com/file/d/1smbdyHpELk0-07mpUxvkTIiXG3gV5Ftp/view?usp=drive_link"
+                                    target="_blank"
+                                    className="p-8 group bg-[#FAFCEE] rounded-3xl border-2 border-transparent hover:border-[#00B6C1]/20 flex flex-col gap-4 text-center items-center transition-all shadow-sm hover:shadow-xl"
+                                >
+                                    <div className="w-16 h-16 rounded-2xl bg-[#00B6C1]/10 text-[#00B6C1] flex items-center justify-center group-hover:bg-[#00B6C1] group-hover:text-white transition-all">
+                                        <FlaskConical size={28} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xl font-serif text-[#0E5858] mb-1">BN Diagnostics</h4>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Lab Integration & Reports</p>
+                                    </div>
+                                    <ArrowUpRight size={18} className="text-[#00B6C1] mt-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                </a>
+
+                                <a
+                                    href="https://drive.google.com/drive/folders/1GN7nDd6QmuiO2rmMB1uiQUvYeqIZPuGK?usp=sharing"
+                                    target="_blank"
+                                    className="p-8 group bg-[#FAFCEE] rounded-3xl border-2 border-transparent hover:border-[#00B6C1]/20 flex flex-col gap-4 text-center items-center transition-all shadow-sm hover:shadow-xl"
+                                >
+                                    <div className="w-16 h-16 rounded-2xl bg-[#FFCC00]/10 text-[#FFCC00] flex items-center justify-center group-hover:bg-[#FFCC00] group-hover:text-[#0E5858] transition-all">
+                                        <Stethoscope size={28} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xl font-serif text-[#0E5858] mb-1">BN Doctors</h4>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Specialist Network</p>
+                                    </div>
+                                    <ArrowUpRight size={18} className="text-[#00B6C1] mt-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                </a>
+                            </div>
+
+                            <p className="mt-10 text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center">Click a service to view specialized clinical protocols</p>
+                        </motion.div>
+                    </motion.div>
+                )}
             </AnimatePresence>
 
             {/* Background Accent */}
@@ -193,13 +264,30 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                                 <span className="px-3 py-1 bg-purple-50 text-purple-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-purple-100">Assignment Module</span>
                             )}
                         </div>
-                        <h2 className="text-4xl lg:text-5xl font-serif text-[#0E5858] mb-6 tracking-tight leading-tight">{topic.title}</h2>
+                        {isEditMode ? (
+                            <input
+                                type="text"
+                                className="w-full text-4xl lg:text-5xl font-serif text-[#0E5858] mb-6 tracking-tight leading-tight border-b-2 border-dashed border-[#0E5858]/30 bg-transparent focus:outline-none focus:border-[#00B6C1]"
+                                value={topic.title}
+                                onChange={(e) => onEdit?.({ title: e.target.value })}
+                            />
+                        ) : (
+                            <h2 className="text-4xl lg:text-5xl font-serif text-[#0E5858] mb-6 tracking-tight leading-tight">{topic.title}</h2>
+                        )}
 
                         <div className="max-w-4xl mb-8">
-                            <div
-                                className="text-gray-500 leading-relaxed text-base font-medium"
-                                dangerouslySetInnerHTML={{ __html: topic.content }}
-                            />
+                            {isEditMode ? (
+                                <textarea
+                                    className="w-full text-gray-500 leading-relaxed text-base font-medium p-4 border-2 border-dashed border-[#0E5858]/30 rounded-xl focus:outline-none focus:border-[#00B6C1] min-h-[120px]"
+                                    value={topic.content}
+                                    onChange={(e) => onEdit?.({ content: e.target.value })}
+                                />
+                            ) : (
+                                <div
+                                    className="text-gray-500 leading-relaxed text-base font-medium"
+                                    dangerouslySetInnerHTML={{ __html: topic.content }}
+                                />
+                            )}
                         </div>
 
                         <div className="flex flex-wrap items-start gap-8">
@@ -222,7 +310,7 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                                             {topic.layout === 'grid' && <div className="w-1.5 h-10 bg-[#FFCC00] rounded-full"></div>}
                                             <div>
                                                 <h4 className={`${topic.layout === 'grid' ? 'text-2xl' : 'text-lg'} font-serif text-[#0E5858]`}>
-                                                    {topic.layout === 'grid' ? topic.title : (topic.isAssignment ? 'Performance Audit' : 'Reference Materials')}
+                                                    {topic.layout === 'grid' ? topic.title : (topic.isAssignment ? 'Reference links' : 'Reference Materials')}
                                                 </h4>
                                                 <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mt-1">
                                                     {topic.layout === 'grid' ? 'Explore Cross-Platform Resources' : (topic.isAssignment ? 'Peer Audit Resource Links' : 'Essential Learning Material')}
@@ -231,16 +319,70 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                                         </div>
                                     </div>
 
-                                    {topic.layout === 'grid' ? (
+                                    {isEditMode ? (
+                                        <div className="space-y-4">
+                                            {topic.links.map((link, idx) => (
+                                                <div key={idx} className="flex flex-col sm:flex-row gap-4 items-center bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                                                    <input
+                                                        type="text"
+                                                        value={link.label}
+                                                        placeholder="Link Label"
+                                                        className="w-full sm:flex-1 p-3 border-2 border-dashed border-[#0E5858]/20 rounded-xl focus:border-[#00B6C1] outline-none text-sm text-[#0E5858] font-bold"
+                                                        onChange={(e) => {
+                                                            const newLinks = [...(topic.links || [])];
+                                                            newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                                            onEdit?.({ links: newLinks });
+                                                        }}
+                                                    />
+                                                    <input
+                                                        type="url"
+                                                        value={link.url}
+                                                        placeholder="https://"
+                                                        className="w-full sm:flex-[2] p-3 border-2 border-dashed border-[#0E5858]/20 rounded-xl focus:border-[#00B6C1] outline-none text-sm text-gray-500"
+                                                        onChange={(e) => {
+                                                            const newLinks = [...(topic.links || [])];
+                                                            newLinks[idx] = { ...newLinks[idx], url: e.target.value };
+                                                            onEdit?.({ links: newLinks });
+                                                        }}
+                                                    />
+                                                    <button
+                                                        onClick={() => {
+                                                            const newLinks = [...(topic.links || [])];
+                                                            newLinks.splice(idx, 1);
+                                                            onEdit?.({ links: newLinks });
+                                                        }}
+                                                        className="p-3 text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-colors shrink-0"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            <button
+                                                onClick={() => {
+                                                    const newLinks = [...(topic.links || []), { label: "New Resource", url: "" }];
+                                                    onEdit?.({ links: newLinks });
+                                                }}
+                                                className="w-full py-4 border-2 border-dashed border-[#00B6C1]/50 text-[#00B6C1] rounded-2xl hover:bg-[#00B6C1]/5 font-bold uppercase tracking-widest text-xs transition-colors mt-2"
+                                            >
+                                                + Add Resource Link
+                                            </button>
+                                        </div>
+                                    ) : topic.layout === 'grid' ? (
                                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
                                             {topic.links.map(link => (
                                                 <motion.a
                                                     key={link.label}
                                                     href={link.url}
-                                                    target="_blank"
+                                                    target={link.isPopup ? undefined : "_blank"}
                                                     rel="noopener noreferrer"
                                                     whileHover={{ y: -8, scale: 1.02 }}
-                                                    onClick={() => logActivity('view_content', { topicCode: topic.code, contentTitle: link.label })}
+                                                    onClick={(e) => {
+                                                        if (link.isPopup) {
+                                                            e.preventDefault();
+                                                            setShowHealthPopup(true);
+                                                        }
+                                                        logActivity('view_content', { topicCode: topic.code, contentTitle: link.label });
+                                                    }}
                                                     className="group/grid-card flex flex-col items-center text-center p-6 bg-white rounded-[2rem] shadow-sm hover:shadow-2xl transition-all border border-[#0E5858]/5 hover:border-[#00B6C1]/20 relative overflow-hidden aspect-[4/5] justify-center"
                                                 >
                                                     <div className="absolute inset-0 bg-gradient-to-b from-[#FAFCEE]/30 to-transparent opacity-0 group-hover/grid-card:opacity-100 transition-opacity"></div>
@@ -315,8 +457,44 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                                 </div>
                             )}
 
-                            {/* Case Study Grid OR Video/Mark as Read OR Assignment Resources */}
-                            {topic.isAssignment && !assignmentCompleted && !videoCompleted ? (
+                            {/* Case Study Grid OR Video/Mark as Read OR Assignment Resources OR Clinical Booking */}
+                            {topic.isBooking ? (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-10 duration-1000">
+                                    <div className="flex items-center gap-4 mb-2">
+                                        <div className="w-12 h-12 bg-[#FFCC00] rounded-2xl flex items-center justify-center text-[#0E5858] shadow-xl shadow-[#FFCC00]/20">
+                                            <Calendar size={24} />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-serif text-[#0E5858]">Mock Call Scheduler</h3>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Select your preferred slot</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="premium-card bg-white rounded-[2.5rem] overflow-hidden border border-[#0E5858]/10 shadow-3xl h-[700px] relative">
+                                        <iframe
+                                            src={topic.bookingUrl}
+                                            className="w-full h-full border-0"
+                                            title="Schedule Mock Call"
+                                        />
+                                        <div className="absolute top-0 right-0 p-6 pointer-events-none">
+                                            <div className="bg-[#FAFCEE]/80 backdrop-blur-md px-4 py-2 rounded-full border border-[#0E5858]/5 flex items-center gap-2">
+                                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                                <span className="text-[8px] font-black text-[#0E5858] uppercase tracking-widest">Live Calendar Connection</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-8 bg-[#FAFCEE] rounded-3xl border border-[#0E5858]/5 flex items-start gap-4">
+                                        <div className="p-3 bg-white rounded-xl text-[#00B6C1] shadow-sm">
+                                            <Sparkles size={20} />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-bold text-[#0E5858] mb-1">Post-Booking Protocol</h4>
+                                            <p className="text-xs text-gray-400 leading-relaxed">Once you book your slot, an automated email invitation will be sent to both you and your counselor with the meeting link. Please ensure your camera is active for the mock call.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : topic.isAssignment && !assignmentCompleted && !videoCompleted ? (
                                 <div className="p-8 bg-gradient-to-br from-[#0E5858] to-[#00B6C1] rounded-[2.5rem] text-center shadow-2xl shadow-[#0E5858]/20 animate-in fade-in zoom-in duration-700">
                                     <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md">
                                         <BrainCircuit size={32} className="text-white animate-pulse" />
@@ -431,7 +609,11 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
 
                             <button
                                 onClick={async () => {
-                                    if (isSyncing || isCompleted) return;
+                                    if (isCompleted) {
+                                        onMoveNext?.(topic.code);
+                                        return;
+                                    }
+                                    if (isSyncing) return;
 
                                     setIsSyncing(true);
                                     try {
@@ -439,13 +621,15 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                                         setSimulationCompleted(true);
                                         setAssignmentCompleted(true);
                                         await onToggleComplete();
+                                        // Auto-advance after sync
+                                        onMoveNext?.(topic.code);
                                     } finally {
                                         setIsSyncing(false);
                                     }
                                 }}
                                 disabled={isSyncing}
                                 className={`group flex items-center gap-4 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.25em] transition-all duration-500 relative ${isCompleted
-                                    ? 'bg-green-50 border border-green-200 text-green-700'
+                                    ? 'bg-[#00B6C1] text-white hover:bg-[#0E5858] hover:-translate-y-1 shadow-2xl scale-105'
                                     : (isSyncing ? 'bg-gray-100 text-gray-400 cursor-wait' : 'bg-[#0E5858] text-white hover:bg-[#00B6C1] hover:-translate-y-1 shadow-2xl shadow-[#0E5858]/30 scale-105')
                                     }`}
                             >
@@ -454,8 +638,17 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                                 )}
                                 {isCompleted ? (
                                     <>
-                                        <CheckCircle2 size={20} />
-                                        Completed
+                                        {isLastTopic ? (
+                                            <>
+                                                <ArrowRight size={20} className="animate-pulse" />
+                                                Next Module
+                                            </>
+                                        ) : (
+                                            <>
+                                                <ArrowRight size={20} className="animate-pulse" />
+                                                Move Next
+                                            </>
+                                        )}
                                     </>
                                 ) : (
                                     <>
@@ -464,7 +657,7 @@ export default function TopicCard({ topic, index, isCompleted, onToggleComplete,
                                         ) : (
                                             <CheckCircle size={20} className="animate-bounce" />
                                         )}
-                                        {isSyncing ? 'Syncing...' : 'Verify Knowledge & Proceed'}
+                                        {isSyncing ? 'Syncing...' : 'Completed Segment'}
                                     </>
                                 )}
                             </button>

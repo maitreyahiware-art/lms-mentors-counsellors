@@ -27,44 +27,66 @@ import { supabase } from "@/lib/supabase";
 
 export default function Home() {
   const router = useRouter();
-  const displayModules = syllabusData;
   const [completedModules, setCompletedModules] = useState<string[]>([]);
   const [userStats, setUserStats] = useState({ progress: 0, avgScore: 0, quizzes: 0 });
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState<string>("");
+  const [dynamicContent, setDynamicContent] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchPersonalStats = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) {
+        setLoading(false);
+        return;
+      }
 
-      // 1. Fetch Assessment Scores
+      setUserName(session.user.user_metadata?.full_name || "Counsellor");
+
+      // 1. Fetch Dynamic Content Metadata (to count total topics)
+      const { data: dynContent } = await supabase
+        .from('syllabus_content')
+        .select('id, module_id');
+
+      const dynamicCount = dynContent?.length || 0;
+      setDynamicContent(dynContent || []);
+
+      // 2. Fetch Assessment Scores
       const { data: assessments } = await supabase
         .from('assessment_logs')
         .select('*')
         .eq('user_id', session.user.id);
 
-      // 2. Fetch Detailed Topic Progress
+      // 3. Fetch Detailed Topic Progress
       const { data: topicProgress, error: tpError } = await supabase
         .from('mentor_progress')
         .select('topic_code')
         .eq('user_id', session.user.id);
 
-      console.log(`[Supabase Check] Fetched ${topicProgress?.length || 0} progress records. Error:`, tpError);
-
       const completedTopicCodes = new Set(topicProgress?.map(p => p.topic_code) || []);
       const dbCompletedModules: string[] = [];
+      const dynamicArray = dynContent || [];
 
-      // Calculate which modules are done based on syllabus
+      // Calculate which modules are done based on syllabus (static) + dynamic topics
       syllabusData.forEach(module => {
-        const allTopicsDone = module.topics.every(t => completedTopicCodes.has(t.code));
-        if (allTopicsDone && module.topics.length > 0) {
+        const dynamicForModule = dynamicArray.filter(d => d.module_id === module.id);
+
+        const staticTopicsDone = module.topics.every(t => completedTopicCodes.has(t.code));
+        const dynamicTopicsDone = dynamicForModule.every(d => completedTopicCodes.has(`DYN-${d.id}`));
+
+        const hasContent = module.topics.length > 0 || dynamicForModule.length > 0;
+
+        if (staticTopicsDone && dynamicTopicsDone && hasContent) {
           dbCompletedModules.push(module.id);
         }
       });
 
       setCompletedModules(dbCompletedModules);
 
-      const totalTopics = syllabusData.reduce((acc, m) => acc + m.topics.length, 0);
+      // Total Topics = Static Syllabus + Dynamic Content
+      const totalStaticTopics = syllabusData.reduce((acc, m) => acc + m.topics.length, 0);
+      const totalTopics = totalStaticTopics + dynamicCount;
+
       const compositeProgress = totalTopics > 0 ? Math.round((completedTopicCodes.size / totalTopics) * 100) : 0;
 
       if (assessments && assessments.length > 0) {
@@ -79,13 +101,6 @@ export default function Home() {
         setUserStats(prev => ({ ...prev, progress: compositeProgress }));
       }
 
-      // Fallback to localStorage only if DB is empty for this user
-      if (completedTopicCodes.size === 0) {
-        const saved = localStorage.getItem('bn-lms-completed-modules');
-        if (saved) {
-          setCompletedModules(JSON.parse(saved));
-        }
-      }
       setLoading(false);
     };
     fetchPersonalStats();
@@ -102,143 +117,196 @@ export default function Home() {
     );
   }
 
-  const toggleModule = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const newCompleted = completedModules.includes(id)
-      ? completedModules.filter(m => m !== id)
-      : [...completedModules, id];
-    setCompletedModules(newCompleted);
-    localStorage.setItem('bn-lms-completed-modules', JSON.stringify(newCompleted));
-  };
-
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
   };
 
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+    visible: { opacity: 1, y: 0 }
   };
 
-  const nextModule = displayModules.find(m => !completedModules.includes(m.id)) || displayModules[displayModules.length - 1];
-  const progressPercent = displayModules.length > 0 ? (completedModules.length / displayModules.length) : 0;
-  const remainingHours = Math.max(0, Math.round(72 * (1 - progressPercent)));
-
   return (
-    <motion.main
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="p-8 lg:p-12 max-w-[1600px] mx-auto min-h-screen"
-    >
-      {/* Top Header Section */}
-      <header className="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-16 gap-10">
-        <motion.div variants={itemVariants} className="max-w-2xl">
-          <div className="flex items-center gap-6 mb-8">
-            <img
-              src="/assets/BN_Logo-BlueBG-Square-HD.png"
-              alt="Balance Nutrition"
-              className="w-20 h-20 object-contain rounded-2xl shadow-lg"
-            />
-            <div>
-              <div className="flex items-center gap-2 text-[#00B6C1] font-bold uppercase tracking-[0.3em] text-[10px] mb-1">
-                <Sparkles size={14} />
-                <span>Clinical Excellence</span>
+    <main className="min-h-screen bg-[#FAFCEE] p-6 lg:p-12 relative overflow-hidden">
+      {/* Premium Background Blobs */}
+      <div className="fixed top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#00B6C1]/5 rounded-full blur-[120px] -z-10"></div>
+      <div className="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#FFCC00]/5 rounded-full blur-[100px] -z-10"></div>
+
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="max-w-7xl mx-auto"
+      >
+        {/* Header Section */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+          <motion.div variants={itemVariants}>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-[#0E5858] rounded-2xl flex items-center justify-center text-white shadow-xl">
+                <User size={24} />
               </div>
-              <h1 className="text-5xl lg:text-7xl leading-[1.1] font-serif text-[#0E5858]">
-                Counselor <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0E5858] via-[#00B6C1] to-[#0E5858]">Training Dashboard</span>
-              </h1>
+              <div>
+                <h1 className="text-3xl font-serif text-[#0E5858]">Welcome back, {userName}</h1>
+                <p className="text-[10px] font-black text-[#00B6C1] uppercase tracking-[0.3em]">clinical proficiency track</p>
+              </div>
             </div>
-          </div>
-          <p className="text-xl text-[#0E5858]/60 font-medium leading-relaxed">
-            Welcome to your official counselor onboarding portal. This space is designed to help you master our specialized clinical protocols and counselling methodologies.
-          </p>
-        </motion.div>
+          </motion.div>
 
-      </header>
-
-      {/* Dashboard Grid Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16">
-
-        {/* Meet Our Team */}
-        <motion.section variants={itemVariants} className="lg:col-span-4 flex flex-col gap-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-serif text-[#0E5858]">Training Support</h3>
-          </div>
-
-          <div className="premium-card p-8 flex-1 space-y-6">
-            {[
-              { name: 'Vishal Rupani', role: 'Leadership, CEO' },
-              { name: 'Khyati Rupani', role: 'Founder & Clinical Lead' },
-              { name: 'Vaibhav Gonjari', role: 'Team Lead' },
-              { name: 'Maitreya Hiware', role: 'Founder Office' },
-            ].map((member, i) => (
-              <div key={i} className="flex items-center gap-4 group cursor-default">
-                <div className={`w-12 h-12 bg-[#FAFCEE] text-[#00B6C1] rounded-2xl flex items-center justify-center transition-transform group-hover:bg-[#00B6C1] group-hover:text-white`}>
-                  <User size={24} />
-                </div>
-                <div>
-                  <p className="font-bold text-[#0E5858] group-hover:text-[#00B6C1] transition-colors">{member.name}</p>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{member.role}</p>
-                </div>
+          {/* Top Stats Cards */}
+          <motion.div variants={itemVariants} className="flex gap-4">
+            <div className="bg-white px-6 py-4 rounded-3xl shadow-sm border border-[#0E5858]/5 flex items-center gap-4 min-w-[180px]">
+              <div className="w-10 h-10 rounded-2xl bg-[#00B6C1]/10 text-[#00B6C1] flex items-center justify-center">
+                <Trophy size={18} />
               </div>
-            ))}
-          </div>
-        </motion.section>
+              <div>
+                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Mastery Score</p>
+                <p className="text-lg font-serif text-[#0E5858]">{userStats.avgScore}%</p>
+              </div>
+            </div>
+            <div className="bg-white px-6 py-4 rounded-3xl shadow-sm border border-[#0E5858]/5 flex items-center gap-4 min-w-[180px]">
+              <div className="w-10 h-10 rounded-2xl bg-[#FFCC00]/10 text-[#FFCC00] flex items-center justify-center">
+                <Activity size={18} />
+              </div>
+              <div>
+                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Tests Taken</p>
+                <p className="text-lg font-serif text-[#0E5858]">{userStats.quizzes}</p>
+              </div>
+            </div>
+          </motion.div>
+        </header>
 
-        {/* Active Learning Module (Replaced Stepper) */}
-        <motion.section variants={itemVariants} className="lg:col-span-8">
-          <div className="premium-card p-10 h-full relative overflow-hidden bg-white border-2 border-[#FAFCEE] shadow-2xl">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#FAFCEE] rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
+        {/* Hero Section: Progress Tracking */}
+        <motion.section variants={itemVariants} className="mb-16">
+          <div className="relative isolate group p-8 lg:p-12 bg-[#0E5858] rounded-[3.5rem] shadow-3xl shadow-[#0E5858]/30 overflow-hidden text-white">
+            <div className="absolute top-[-50%] right-[-10%] w-[60%] h-[150%] bg-[#00B6C1]/10 rounded-full blur-[100px] -z-10 group-hover:scale-110 transition-transform duration-1000"></div>
 
-            <div className="relative z-10">
-              <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-6">
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-[#0E5858] text-white rounded-lg">
-                      <BookOpen size={16} />
-                    </div>
-                    <span className="text-[10px] font-black text-[#0E5858] uppercase tracking-[0.2em]">Active Learning Module</span>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#00B6C1]/20 rounded-full text-[10px] font-bold uppercase tracking-widest mb-6">
+                  <Sparkles size={12} className="text-[#00B6C1]" />
+                  Session Highlight
+                </div>
+                <h2 className="text-5xl lg:text-6xl font-serif mb-6 leading-tight">Master the Art of <br />Clinical Consultation</h2>
+                <button
+                  onClick={() => router.push('/modules/module-4')}
+                  className="px-8 py-4 bg-[#00B6C1] text-[#0E5858] rounded-2xl font-bold shadow-2xl hover:bg-white transition-all flex items-center gap-3 group/btn"
+                >
+                  Jump to Module 4
+                  <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
+                </button>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-md rounded-[2.5rem] p-8 border border-white/10">
+                <div className="flex justify-between items-end mb-4">
+                  <div>
+                    <p className="text-xs font-medium text-white/60 mb-1">Current Mastery Progress</p>
+                    <h3 className="text-4xl font-serif">{userStats.progress}%</h3>
                   </div>
-                  <h2 className="text-4xl font-serif text-[#0E5858] mb-2">{nextModule.title}</h2>
-                  <p className="text-gray-400 font-medium max-w-lg mb-8">{nextModule.subtitle || nextModule.description}</p>
-
-                  <button
-                    onClick={() => router.push(`/modules/${nextModule.id}`)}
-                    className="group bg-[#0E5858] text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center gap-4 hover:bg-[#00B6C1] transition-all"
-                  >
-                    Continue Training
-                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                  </button>
+                  <div className="text-right">
+                    <p className="text-[10px] font-black text-[#00B6C1] uppercase tracking-widest">{completedModules.length}/{syllabusData.length} Modules</p>
+                  </div>
+                </div>
+                <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden mb-8">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${userStats.progress}%` }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    className="h-full bg-gradient-to-r from-[#00B6C1] to-[#FFCC00]"
+                  ></motion.div>
                 </div>
 
-                <div className="min-w-[240px] p-6 bg-[#FAFCEE] rounded-3xl border border-[#0E5858]/5">
-                  <p className="text-[9px] font-black text-[#0E5858]/40 uppercase tracking-[0.2em] mb-4">Module Snapshot</p>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center text-xs font-bold text-[#0E5858]">
-                      <span className="opacity-40">Topics</span>
-                      <span>{nextModule.topics.length}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs font-bold text-[#0E5858]">
-                      <span className="opacity-40">Tasks</span>
-                      <span>{nextModule.hasAssignment ? '1 Clinical Audit' : 'Self-Review'}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs font-bold text-[#0E5858]">
-                      <span className="opacity-40">Type</span>
-                      <span className="badge-teal text-[9px]">{nextModule.type}</span>
-                    </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mb-1">Baseline</p>
+                    <p className="text-xs font-bold text-white/80">Static 74</p>
+                  </div>
+                  <div className="text-center border-x border-white/10">
+                    <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mb-1">Quizzes</p>
+                    <p className="text-xs font-bold text-white/80">Active AI</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mb-1">Growth</p>
+                    <p className="text-xs font-bold text-[#00B6C1]">Dynamic</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </motion.section>
-      </div>
 
-    </motion.main>
+        {/* Modules Grid */}
+        <motion.section variants={itemVariants}>
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl font-serif text-[#0E5858]">Expertise Modules</h3>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Self-Paced Clinical Mastery</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {syllabusData.map((module, index) => {
+              const isCompleted = completedModules.includes(module.id);
+              return (
+                <motion.div
+                  key={module.id}
+                  whileHover={{ y: -8 }}
+                  onClick={() => router.push(`/modules/${module.id}`)}
+                  className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 border border-transparent hover:border-[#00B6C1]/20 transition-all cursor-pointer group flex flex-col justify-between min-h-[300px]"
+                >
+                  <div>
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="w-14 h-14 bg-[#FAFCEE] rounded-2xl flex items-center justify-center text-[#0E5858] group-hover:bg-[#0E5858] group-hover:text-white transition-all duration-500">
+                        <BookOpen size={24} />
+                      </div>
+                      {isCompleted && (
+                        <div className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-[8px] font-black uppercase tracking-widest border border-green-100 flex items-center gap-1">
+                          <CheckCircle2 size={10} /> Complete
+                        </div>
+                      )}
+                    </div>
+
+                    <h4 className="text-[10px] font-black text-[#00B6C1] uppercase tracking-[0.3em] mb-2">Module {index + 1}</h4>
+                    <h3 className="text-xl font-serif text-[#0E5858] mb-4 group-hover:text-[#00B6C1] transition-colors">{module.title}</h3>
+                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{module.description}</p>
+                  </div>
+
+                  <div className="mt-8 pt-6 border-t border-gray-50 flex items-center justify-between">
+                    <div className="flex items-center gap-4 text-[10px] font-bold text-gray-300">
+                      <span className="flex items-center gap-1.5">
+                        <ListChecks size={12} />
+                        {module.topics.length + (dynamicContent.filter((d: any) => d.module_id === module.id).length || 0)} Sections
+                      </span>
+                    </div>
+                    <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-300 group-hover:bg-[#00B6C1] group-hover:border-transparent group-hover:text-white transition-all">
+                      <ArrowRight size={14} />
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.section>
+
+        {/* Quick Links Footer */}
+        <motion.section variants={itemVariants} className="mt-20 pt-12 border-t border-gray-100 grid grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          {[
+            { title: 'Content Bank', icon: ShoppingBag, url: '/content-bank' },
+            { title: 'Peer Audits', icon: Share2, url: '#' },
+            { title: 'Certifications', icon: Trophy, url: '#' },
+            { title: 'Clinical Log', icon: FileSpreadsheet, url: '#' }
+          ].map((link, i) => (
+            <button
+              key={i}
+              onClick={() => router.push(link.url)}
+              className="flex items-center gap-4 p-4 rounded-2xl hover:bg-white transition-colors text-left group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:text-[#00B6C1] transition-colors">
+                <link.icon size={18} />
+              </div>
+              <span className="text-xs font-bold text-[#0E5858] uppercase tracking-widest">{link.title}</span>
+            </button>
+          ))}
+        </motion.section>
+      </motion.div>
+    </main>
   );
 }

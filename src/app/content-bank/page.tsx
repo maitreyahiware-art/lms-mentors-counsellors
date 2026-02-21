@@ -34,6 +34,31 @@ function ContentBankContent() {
     // Extract resource bank module
     const resourceModule = syllabusData.find(m => m.type === 'resource' || m.id === 'resource-bank');
 
+    // Manage state for dynamically loaded content
+    const [dynamicResources, setDynamicResources] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchDynamic = async () => {
+            const { createClient } = await import('@supabase/supabase-js');
+            const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+
+            const { data } = await supabase.from('syllabus_content').select('*').in('content_type', ['video', 'document', 'link']);
+            if (data) {
+                const mapped = data.map(d => ({
+                    code: `DYN-${d.id}`,
+                    title: d.title,
+                    content: d.content_type === 'video' ? 'Training Session' : 'Resource Document',
+                    links: [{ url: d.content, label: 'Access Resource' }],
+                    isDynamic: true,
+                    moduleId: d.module_id,
+                    contentType: d.content_type
+                }));
+                setDynamicResources(mapped);
+            }
+        };
+        fetchDynamic();
+    }, []);
+
     useEffect(() => {
         const q = searchParams.get('search');
         if (q) {
@@ -45,7 +70,9 @@ function ContentBankContent() {
 
     const categories = ["All", "Sales Training", "Phase 1", "Phase 2", "Program Manuals"];
 
-    const filteredResources = resourceModule?.topics.filter(r => {
+    const allResources = [...(resourceModule?.topics || []), ...dynamicResources];
+
+    const filteredResources = allResources.filter(r => {
         // Remove items with no link or '#' links
         const hasValidLink = r.links && r.links.length > 0 && r.links[0].url && r.links[0].url !== '#';
         if (!hasValidLink) return false;

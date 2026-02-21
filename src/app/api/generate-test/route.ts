@@ -10,7 +10,7 @@ export async function POST(req: Request) {
             messages: [
                 {
                     role: "system",
-                    content: `You are an expert Clinical Mentor at Balance Nutrition. 
+                    content: `You are an expert Clinical Counsellor at Balance Nutrition. 
                     Your goal is to generate a high-stakes clinical assessment based on the provided material.
                     
                     Follow these strict rules:

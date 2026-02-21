@@ -1,25 +1,25 @@
 # Product Requirements Document (PRD)
-## Balance Nutrition: AI-Powered Mentor LMS
+## Balance Nutrition: AI-Powered Counsellor LMS
 
 ### 1. Executive Summary
-The **Balance Nutrition Mentor LMS** is a next-generation training platform designed to transform the onboarding and continuous education of clinical mentors. Unlike traditional static LMSs, this platform leverages **Groq Llama 3.3 70B** to generate dynamic, context-aware assessments, simulated clinical scenarios, and automated performance audits. The goal is to ensure every mentor is "Review Ready" through rigorous, adaptive testing rather than passive content consumption.
+The **Balance Nutrition Counsellor LMS** is a next-generation training platform designed to transform the onboarding and continuous education of clinical counsellors. Unlike traditional static LMSs, this platform leverages **Groq Llama 3.3 70B** to generate dynamic, context-aware assessments, simulated clinical scenarios, and automated performance audits. The goal is to ensure every counsellor is "Review Ready" through rigorous, adaptive testing rather than passive content consumption.
 
 ### 2. Objectives & Goals
 - **Eliminate Rote Learning:** Replace static question banks with AI-generated assessments that test understanding at multiple cognitive levels (Recall, Application, Analysis).
 - **Scale Training:** Remove the bottleneck of HR manually grading assignments and writing tests.
-- **Clinical Excellence:** Ensure mentors master the specific "Balance Nutrition" protocols, pricing, and clinical logic before handling real clients.
-- **Real-Time Founder Oversight:** Provide Khyati Ma'am and the leadership team with a "God Mode" view of mentor competency, confidence, and engagement.
+- **Clinical Excellence:** Ensure counsellors master the specific "Balance Nutrition" protocols, pricing, and clinical logic before handling real clients.
+- **Real-Time Founder Oversight:** Provide Khyati Ma'am and the leadership team with a "God Mode" view of counsellor competency, confidence, and engagement.
 
 ### 3. User Personas
 
-#### A. The Mentor (Candidate)
+#### A. The Counsellor (Candidate)
 - **Goal:** Learn the BN curriculum, pass assessments, and get certified to take calls.
 - **Pain Points:** Overwhelmed by static PDFs, lack of feedback, boring quizzes.
 - **Needs:** Interactive content, instant feedback on quizzes, realistic practice.
 
 #### B. The Founder (Super Admin)
-- **Goal:** Verify that mentors truly understand the brand vision and clinical protocols.
-- **Pain Points:** Cannot manually vet every mentor; needs high-level assurance of quality.
+- **Goal:** Verify that counsellors truly understand the brand vision and clinical protocols.
+- **Pain Points:** Cannot manually vet every counsellor; needs high-level assurance of quality.
 - **Needs:** A dashboard showing "Knowledge Depth," pass rates, and aggregated audit logs.
 
 #### C. HR / Admin
@@ -36,9 +36,9 @@ The **Balance Nutrition Mentor LMS** is a next-generation training platform desi
   - **Constraint:** Questions must follow Bloom's Taxonomy (Recall -> Application -> Analysis).
   - **Output:** JSON array of questions with "distractor" logic (plausible but wrong answers).
 - **Simulation Engine (Future):**
-  - Chatbot persona acting as a "Difficult Client" to test mentor patience and sales scripts.
+  - Chatbot persona acting as a "Difficult Client" to test counsellor patience and sales scripts.
 
-#### 4.2. Mentor Portal (Frontend)
+#### 4.2. Counsellor Portal (Frontend)
 - **Syllabus Navigation:**
   - Segments: Business Overview, Program Training, Cleanse Programs.
   - Progress Indication: Visual progress bars for each module.
@@ -52,11 +52,11 @@ The **Balance Nutrition Mentor LMS** is a next-generation training platform desi
 
 #### 4.3. Founder Intelligence Dashboard
 - **Stats Overview:**
-  - Active Mentors, Total Assessments Taken, Average Knowledge Depth (%), Simulations Run.
+  - Active Counsellors, Total Assessments Taken, Average Knowledge Depth (%), Simulations Run.
 - **Detailed Logs:**
   - **Quiz Scores:** View individual attempts, scores, and timestamps.
   - **Call Transcripts:** (Future) Review AI-simulated sales calls.
-  - **Summary Audits:** AI grading of the text summaries submitted by mentors.
+  - **Summary Audits:** AI grading of the text summaries submitted by counsellors.
   - **Certifications:** Final exam results (Pass/Fail status).
 - **Data Visualization:** Clean, high-end UI using Recharts or numeric stats to show trends.
 
@@ -90,4 +90,4 @@ The syllabus is defined as code (`syllabus.ts`) to serve as the ground truth for
 ### 8. Roadmap & Phasing
 - **Phase 1 (Current):** Core LMS, AI Quiz Generation, Founder Dashboard (Basic Stats).
 - **Phase 2:** Clinical Simulations (Chat with AI Patient), Automated Essay Grading (Summary Mail).
-- **Phase 3:** Gamification (Leaderboards, "Mentor of the Month"), HR Admin Tools.
+- **Phase 3:** Gamification (Leaderboards, "Counsellor of the Month"), HR Admin Tools.

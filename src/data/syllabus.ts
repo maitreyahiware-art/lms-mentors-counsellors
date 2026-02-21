@@ -26,8 +26,11 @@ export interface Topic {
     assignmentQuestions?: string[];
     caseStudyLinks?: string[];
     persona?: { story: string; goal: string };
-    links?: { label: string; url: string; subtitle?: string; icon?: string }[];
+    links?: { label: string; url: string; subtitle?: string; icon?: string; isPopup?: boolean }[];
     layout?: 'default' | 'grid';
+    isBooking?: boolean;
+    bookingUrl?: string;
+    isDynamic?: boolean;
 }
 
 export interface Module {
@@ -62,18 +65,18 @@ export const syllabusData: Module[] = [
                 content: 'Study the core platform to understand the client interface.',
                 layout: 'grid',
                 links: [
-                    { label: 'BN Website', subtitle: 'E-Commerce & Product Inventory', url: 'https://www.balancenutrition.in/' },
-                    { label: 'BN Recipes', subtitle: 'Entrepreneurial Learning Platform', icon: 'target', url: 'https://www.balancenutrition.in/recipes' },
-                    { label: 'BN Health Reads', subtitle: 'Life Centre & Franchise Operations', icon: 'globe', url: 'https://www.balancenutrition.in/health-reads' },
-                    { label: 'BN App', subtitle: 'Clinical OS & Patient Management', icon: 'activity', url: 'https://docs.google.com/document/d/13ueBq-I6O53PrHbPIkifPPZ7tE1HZ9Bl-iTExkhM2Fk/edit?tab=t.0' }
+                    { label: 'BN Shop', subtitle: 'E-Commerce & Product Inventory', url: 'https://www.balancenutrition.in/' },
+                    { label: 'Nutripreneur', subtitle: 'Entrepreneurial Learning Platform', icon: 'target', url: 'https://www.balancenutrition.in/recipes' },
+                    { label: 'BN Franchise', subtitle: 'Life Centre & Franchise Operations', icon: 'globe', url: 'https://www.balancenutrition.in/health-reads' },
+                    { label: 'BN Health', subtitle: 'Clinical OS & Patient Management', icon: 'activity', url: '#', isPopup: true }
                 ]
             },
             {
                 code: 'M1-02',
-                title: 'Meet Our Founder',
+                title: 'Meet Our Founders',
                 content: 'Review the brochures and understand the core vision of Balance Nutrition. Understand what we stand for and our promise to clients.',
                 links: [
-                    { label: 'Meet Khyati', url: 'https://balancenutrition.in/meet-khyati' },
+                    { label: 'Meet Founders', url: 'https://www.balancenutrition.in/aboutus' },
                     { label: 'Khyati Journey', url: 'https://yourstory.com/2017/12/youngest-chief-nutritionist-india-helping-10000-people-battle-weight-issues-email-meet-khyati-rupani' },
                     { label: 'Youtube series', url: 'https://www.youtube.com/watch?v=v8eD_P6E7D0&list=PLiNqWVAAuQ1FwiQKRMtGCMXy1kIYdjlig' }
                 ]
@@ -119,10 +122,9 @@ export const syllabusData: Module[] = [
                 title: 'Awards and Recognition',
                 content: 'Explore the international accolades, media features, and brand milestones of Balance Nutrition.',
                 links: [
-                    { label: 'BN Vision & Recognition', url: 'https://www.youtube.com/watch?v=qtjKDiRAaXw' },
+
                     { label: "Vishal Sir's BTVI Interview", url: 'https://www.youtube.com/watch?v=slBpy4wPX5g&t=8s' },
-                    { label: 'Brand Recognition Gallery', url: 'https://www.balancenutrition.in/media-gallery' },
-                    { label: 'Award by Times Now', url: 'https://www.youtube.com/watch?v=VPrT-yRt9v8#action=share' }
+                    { label: 'Media-Awards-Recognition', url: 'https://www.youtube.com/watch?v=VPrT-yRt9v8#action=share' }
                 ]
             },
 
@@ -199,6 +201,20 @@ export const syllabusData: Module[] = [
         topics: [
             {
                 code: 'M3-01',
+                title: 'Training Resource',
+                content: 'Final management training summaries and wrap-up sessions.',
+                links: [
+                    { label: 'CIS live presntation and follow ups', url: 'https://docs.google.com/document/d/1OgHV7RzQNBrTXFWiIWhPyMKAQLSAIOy6/edit' },
+                    { label: 'CIS Intro overview to sales2', url: 'https://docs.google.com/document/d/1rbAm8SwXj4SJ_0urlSmBQ4ss4md00SN3/edit' },
+                    { label: 'CIS Goal setting', url: 'https://docs.google.com/document/d/1lo_Hx07qjO1YBxfYJCVhzLad8J4jqHgK/edit' },
+                    { label: 'Engagement Manual', url: 'https://docs.google.com/document/d/1BGs732y6H04XHySp7r3ivu8n4fkF-MjMHJv_wYvbhA8/edit?tab=t.0#heading=h.lhggr0z4ly8' },
+                    { label: 'Wallet Money Doc', url: 'https://docs.google.com/spreadsheets/d/1X9T8TJw9UX7AtdNiZrRUA_pvQYRM8AMd5Fu1kuozISo/edit?gid=0#gid=0' },
+                    { label: 'WhatsApp Dos and Donts', url: 'https://drive.google.com/file/d/1fFUtJPGTBb_cLVGizvC4EwtKNOh23vDG/view' },
+                    { label: 'Lead Conversion (Consultation) Training by Krishna', url: 'https://us06web.zoom.us/rec/play/tH49jQn_4nKfmAaHkjtYZD1BbE7XhVjxiMBK4qsp3PG_HHiPT24Q6Gbkmv9l1duLFczNqgJHrST8I0t-.hFkYNmkz4w3CAw5V?eagerLoadZvaPages=sidemenu.billing.plan_management&accessLevel=meeting&canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fus06web.zoom.us%2Frec%2Fshare%2FFGUqZ4uRA8jnB-HXnKYReWXxUrCrpYB64UlBhHzjjVOfCpYilXKpJnSFoL8Q2yh1.rn_6BNdfPwOc10XD' },
+                ]
+            },
+            {
+                code: 'M3-01',
                 title: 'Sales Mastery: Phase 1',
                 content: 'Introduction to sales protocols, mock consultations, and foundational structures.',
                 links: [
@@ -226,20 +242,7 @@ export const syllabusData: Module[] = [
                     { label: 'Sales Training Part 8', url: 'https://youtu.be/W2FKSOOA600' }
                 ]
             },
-            {
-                code: 'M3-04',
-                title: 'Training Resource',
-                content: 'Final management training summaries and wrap-up sessions.',
-                links: [
-                    { label: 'CIS sales workbook_1', url: 'https://docs.google.com/document/d/1OgHV7RzQNBrTXFWiIWhPyMKAQLSAIOy6/edit' },
-                    { label: 'CIS sales workbook_2', url: 'https://docs.google.com/document/d/1rbAm8SwXj4SJ_0urlSmBQ4ss4md00SN3/edit' },
-                    { label: 'CIS sales workbook_3', url: 'https://docs.google.com/document/d/1lo_Hx07qjO1YBxfYJCVhzLad8J4jqHgK/edit' },
-                    { label: 'Engagement Manual', url: 'https://docs.google.com/document/d/1BGs732y6H04XHySp7r3ivu8n4fkF-MjMHJv_wYvbhA8/edit?tab=t.0#heading=h.lhggr0z4ly8' },
-                    { label: 'Wallet Money Doc', url: 'https://docs.google.com/spreadsheets/d/1X9T8TJw9UX7AtdNiZrRUA_pvQYRM8AMd5Fu1kuozISo/edit?gid=0#gid=0' },
-                    { label: 'WhatsApp Dos and Donts', url: 'https://drive.google.com/file/d/1fFUtJPGTBb_cLVGizvC4EwtKNOh23vDG/view' },
-                    { label: 'Lead Conversion (Consultation) Training by Krishna', url: 'https://us06web.zoom.us/rec/play/tH49jQn_4nKfmAaHkjtYZD1BbE7XhVjxiMBK4qsp3PG_HHiPT24Q6Gbkmv9l1duLFczNqgJHrST8I0t-.hFkYNmkz4w3CAw5V?eagerLoadZvaPages=sidemenu.billing.plan_management&accessLevel=meeting&canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fus06web.zoom.us%2Frec%2Fshare%2FFGUqZ4uRA8jnB-HXnKYReWXxUrCrpYB64UlBhHzjjVOfCpYilXKpJnSFoL8Q2yh1.rn_6BNdfPwOc10XD' },
-                ]
-            },
+
         ]
     },
 
@@ -266,6 +269,14 @@ export const syllabusData: Module[] = [
             },
 
             {
+                code: 'M4-03',
+                title: 'Day-to-Day Lead Engagement',
+                content: 'Strategies for daily client engagement, motivation, and milestone tracking.',
+                links: [
+                    { label: 'Engagement Guide', url: 'https://drive.google.com/file/d/1mrrNxIUOXRKXPVYZsDYvf64fp-8gbOS2/view?usp=sharing' }
+                ]
+            },
+            {
                 code: 'M4-02',
                 title: 'Case Studies',
                 content: 'Analyze specific client cases and their health journeys.',
@@ -287,18 +298,16 @@ export const syllabusData: Module[] = [
                     "https://docs.google.com/presentation/d/1bTsF-dbhUi6w7AHP9zQuFrL-AIfQU1jx/",
                     "https://docs.google.com/presentation/d/1oOmD5NVRtYcfGRBdPVr6_ll2sMNxIIpD/",
                     "https://docs.google.com/presentation/d/1e8RI6bUG3lUmkHHhIj4wP-0FT6KJDcay/",
-                    "https://docs.google.com/presentation/d/1Ph-pJDQxQiNgb0-K3uqrrw23ZgjIj3Cr/"
                 ]
             },
 
             {
-                code: 'M4-03',
-                title: 'Day-to-Day Lead Engagement',
-                content: 'Strategies for daily client engagement, motivation, and milestone tracking.',
-                links: [
-                    { label: 'Engagement Guide', url: 'https://drive.google.com/file/d/1mrrNxIUOXRKXPVYZsDYvf64fp-8gbOS2/view?usp=sharing' }
-                ]
-            }
+                code: 'M4-04',
+                title: 'Schedule Your Mock Call',
+                content: 'Book a 1-on-1 mock consultation call with your clinical lead to verify your training progress.',
+                isBooking: true,
+                bookingUrl: 'https://calendar.app.google/atYBB4DcqN6MX2V48'
+            },
         ]
     },
 

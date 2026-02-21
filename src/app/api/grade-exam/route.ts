@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
         const { candidateAnswers, sections } = await req.json();
 
         const systemPrompt = `You are the Senior Clinical Auditor at Balance Nutrition. 
-Your task is to grade a mentor's Certification Exam. 
+Your task is to grade a counsellor's Certification Exam. 
 
 The exam consists of open-ended questions about BN culture, clinical protocols, operations, and sales logic.
 

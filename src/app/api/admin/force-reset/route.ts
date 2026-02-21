@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyAdmin } from '@/lib/admin-auth';
 
 // ADMIN CLIENT (Uses Service Role Key)
 const supabaseAdmin = createClient(
@@ -13,8 +14,11 @@ const supabaseAdmin = createClient(
     }
 );
 
-export async function POST() {
-    const mentors = [
+export async function POST(request: Request) {
+    // Server-side admin check
+    const auth = await verifyAdmin(request);
+    if (!auth.authorized) return auth.response;
+    const counsellors = [
         { name: 'Anjali Mehta', email: 'anjali.m@balancenutrition.in' },
         { name: 'Rahul Sharma', email: 'rahul.s@balancenutrition.in' },
         { name: 'Priya Kapoor', email: 'priya.k@balancenutrition.in' },
@@ -29,11 +33,11 @@ export async function POST() {
 
     const results = [];
 
-    for (const mentor of mentors) {
+    for (const counsellor of counsellors) {
         try {
             // 1. Try to find the user first
             const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-            const existingUser = users?.find(u => u.email === mentor.email);
+            const existingUser = users?.find(u => u.email === counsellor.email);
 
             let userId;
 
@@ -48,10 +52,10 @@ export async function POST() {
             } else {
                 // 3. Create brand new user
                 const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
-                    email: mentor.email,
+                    email: counsellor.email,
                     password: '515148',
                     email_confirm: true,
-                    user_metadata: { full_name: mentor.name }
+                    user_metadata: { full_name: counsellor.name }
                 });
                 if (createError) throw createError;
                 userId = created.user?.id;
@@ -61,15 +65,15 @@ export async function POST() {
             if (userId) {
                 await supabaseAdmin.from('profiles').upsert({
                     id: userId,
-                    email: mentor.email,
-                    full_name: mentor.name,
-                    role: 'mentor'
+                    email: counsellor.email,
+                    full_name: counsellor.name,
+                    role: 'counsellor'
                 });
             }
 
-            results.push({ email: mentor.email, status: 'synced' });
+            results.push({ email: counsellor.email, status: 'synced' });
         } catch (err: any) {
-            results.push({ email: mentor.email, status: 'error', message: err.message });
+            results.push({ email: counsellor.email, status: 'error', message: err.message });
         }
     }
 

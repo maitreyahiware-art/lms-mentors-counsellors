@@ -269,32 +269,6 @@ export default function LoginPage() {
                                         )}
                                     </button>
 
-                                    {mode === 'login' && (
-                                        <div className="pt-4 border-t border-gray-100 mt-6 text-center">
-                                            <button
-                                                type="button"
-                                                onClick={async () => {
-                                                    setLoading(true);
-                                                    // Using anjali.m for both as it's a guaranteed account in the current system
-                                                    const testEmail = 'anjali.m@balancenutrition.in';
-                                                    const { error } = await supabase.auth.signInWithPassword({
-                                                        email: testEmail,
-                                                        password: '515148',
-                                                    });
-                                                    if (error) {
-                                                        setError(error.message);
-                                                        setLoading(false);
-                                                    } else {
-                                                        router.push(selectedRole === 'admin' ? "/admin" : "/");
-                                                    }
-                                                }}
-                                                className="inline-flex items-center gap-2 text-[10px] font-black text-[#00B6C1] uppercase tracking-[0.2em] hover:text-[#0E5858] transition-colors"
-                                            >
-                                                <ShieldCheck size={14} />
-                                                Developer Pass (Skip Login)
-                                            </button>
-                                        </div>
-                                    )}
                                 </form>
                             </div>
                         </motion.div>
@@ -302,7 +276,7 @@ export default function LoginPage() {
                 </AnimatePresence>
 
                 <p className="mt-12 text-center text-[10px] text-[#0E5858]/30 font-medium tracking-[0.1em] italic leading-relaxed max-w-[280px] mx-auto">
-                    "The world's most trusted Indian health ecosystem mentor portal."
+                    "The world's most trusted Indian health ecosystem counsellor portal."
                 </p>
             </motion.div>
         </main>

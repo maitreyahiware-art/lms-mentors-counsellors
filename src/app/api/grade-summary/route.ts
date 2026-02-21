@@ -8,7 +8,7 @@ export async function POST(req: Request) {
         const { summary, topicTitle, topicContent } = await req.json();
 
         const systemPrompt = `You are a Senior Clinical Auditor at Balance Nutrition. 
-        Your task is to review a mentor's学习 summary of the topic: "${topicTitle}".
+        Your task is to review a counsellor's summary of the topic: "${topicTitle}".
         
         Syllabus Reference Content:
         ${topicContent}
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
         const chatCompletion = await groq.chat.completions.create({
             messages: [
                 { role: "system", content: systemPrompt },
-                { role: "user", content: `Mentor's Summary: ${summary}` }
+                { role: "user", content: `Counsellor's Summary: ${summary}` }
             ],
             model: "llama-3.3-70b-versatile",
             temperature: 0.5,
